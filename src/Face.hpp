@@ -3,45 +3,9 @@
 
 #include "KRE/KRE.hpp"
 #include "Colours.hpp"
+#include "Enums.hpp"
 
 #include <cstdint>
-
-enum class FaceFlag : uint8_t
-{
-    Top     = 1 << 0,
-    Bottom  = 1 << 1,
-    Front   = 1 << 2,
-    Back    = 1 << 3,
-    Left    = 1 << 4,
-    Right   = 1 << 5,
-};
-
-namespace std
-{
-    template<>
-    struct hash<FaceFlag>
-    {
-        size_t operator()(const FaceFlag& f) const
-        {
-            return hash<int>()(static_cast<uint32_t>(f));
-        }
-    };
-}
-
-inline FaceFlag operator|(FaceFlag& lhs, const FaceFlag& rhs)
-{
-    return static_cast<FaceFlag>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
-}
-
-inline FaceFlag operator&(FaceFlag& lhs, const FaceFlag& rhs)
-{
-    return static_cast<FaceFlag>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
-}
-
-inline FaceFlag& operator|=(FaceFlag& lhs, const FaceFlag& rhs)
-{
-    return lhs = lhs | rhs;
-}
 
 class Face
 {

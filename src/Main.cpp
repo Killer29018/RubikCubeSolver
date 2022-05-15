@@ -64,60 +64,35 @@ int main()
     glEnable(GL_MULTISAMPLE);
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-
-    // camera.setPosition(glm::vec3(3.0f, 3.0f, 3.0f));
-    // camera.processMouseMovement(-5.0f, -100.0f);
     camera.setCameraPerspective(KRE::CameraPerspective::PERSPECTIVE);
     camera.setCameraMovement(KRE::CameraMovementTypes::FREE_FLY);
-
 
     KRE::Shader shader;
     shader.compilePath("res/shaders/basic.vert", "res/shaders/basic.frag");
 
-
     glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-    // std::cout << "PROJECTION: \n" << glm::to_string(projection) << "\n";
-
-    // glm::mat4 mat(1.0f);
-    // mat = glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-    // std::cout << glm::to_string(mat) << "\n";
-    
-     // glm::mat4 projection(1.0f);
 
     shader.bind();
     shader.setUniformMatrix4("u_Projection", projection);
 
-    Face::generateData();
-
-    // QB cube;
-    // cube.addFace(FaceFlag::Top);
-    // cube.addFace(FaceFlag::Bottom);
-    // cube.addFace(FaceFlag::Front);
-    // cube.addFace(FaceFlag::Back);
-    // cube.addFace(FaceFlag::Left);
-    // cube.addFace(FaceFlag::Right);
     CubeManager::generate(3, 3, 3);
-    // CubeManager::scramble("B' U' B2 D2 U R2 B2 U2 B2 U L2 B2 F D2 R B2 R F U F' D2");
-    // CubeManager::rotate(FaceFlag::Front, RotationType::NORMAL);
-    // CubeManager::rotate(FaceFlag::Top, RotationType::NORMAL);
-    // CubeManager::rotate(FaceFlag::Back, RotationType::NORMAL);
+    CubeManager::scramble("L2 F2 L2 U' B2 U B2 L2 F2 R2 F' D L2 U B' L2 R U R2 B'");
 
     while (!glfwWindowShouldClose(window))
     {
         KRE::Clock::tick();
         glfwPollEvents();
+        CubeManager::update(KRE::Clock::deltaTime);
         
         processKeys(camera);
 
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // VAO.bind();
         shader.bind();
 
         shader.setUniformMatrix4("u_View", camera.getViewMatrix());
 
-        // glDrawElements(GL_TRIANGLES, indices.getCount(), GL_UNSIGNED_INT, NULL);
         CubeManager::draw(shader);
 
         glfwSwapBuffers(window);
@@ -161,17 +136,17 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         KRE::Keyboard::unpressKey(key);
 
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
-        CubeManager::rotate(FaceFlag::Right, RotationType::NORMAL);
+        CubeManager::addMove({ FaceEnum::RIGHT, RotationEnum::NORMAL });
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
-        CubeManager::rotate(FaceFlag::Left, RotationType::NORMAL);
+        CubeManager::addMove({ FaceEnum::LEFT, RotationEnum::NORMAL });
     if (key == GLFW_KEY_U && action == GLFW_PRESS)
-        CubeManager::rotate(FaceFlag::Top, RotationType::NORMAL);
+        CubeManager::addMove({ FaceEnum::UP, RotationEnum::NORMAL });
     if (key == GLFW_KEY_X && action == GLFW_PRESS)
-        CubeManager::rotate(FaceFlag::Bottom, RotationType::NORMAL);
+        CubeManager::addMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
     if (key == GLFW_KEY_F && action == GLFW_PRESS)
-        CubeManager::rotate(FaceFlag::Front, RotationType::NORMAL);
+        CubeManager::addMove({ FaceEnum::FRONT, RotationEnum::NORMAL });
     if (key == GLFW_KEY_B && action == GLFW_PRESS)
-        CubeManager::rotate(FaceFlag::Back, RotationType::NORMAL);
+        CubeManager::addMove({ FaceEnum::BACK, RotationEnum::NORMAL });
 }
 
 void processKeys(KRE::Camera& camera)

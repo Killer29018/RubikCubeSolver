@@ -10,19 +10,20 @@
 class QB
 {
 public:
-    FaceFlag activeFaces = static_cast<FaceFlag>(0);
+    FaceEnum activeFaces = static_cast<FaceEnum>(0);
     glm::vec3 pos;
 private:
-    std::unordered_map<FaceFlag, Face> m_Faces;
+    std::unordered_map<FaceEnum, Face> m_Faces;
     // std::vector<glm::vec3> m_Rotations;
     glm::quat m_TotalRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    glm::quat m_TempRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 public:
     QB() = default;
     QB(glm::vec3 pos) : pos(pos) {};
 
-    void addFace(FaceFlag face);
+    void addFace(FaceEnum face);
 
-    void rotate(glm::ivec3 rotation);
+    void rotate(glm::ivec3 rotation, float percentage);
 
     void draw(KRE::Shader& shader);
 private:
