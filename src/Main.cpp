@@ -32,7 +32,8 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);    
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cubes", NULL, NULL);
 
@@ -60,6 +61,7 @@ int main()
     std::cout << "Loaded OpenGL " << GLAD_VERSION_MAJOR(version) << "." << GLAD_VERSION_MINOR(version) << "\n";
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 
@@ -95,6 +97,7 @@ int main()
     // cube.addFace(FaceFlag::Left);
     // cube.addFace(FaceFlag::Right);
     CubeManager::generate(3, 3, 3);
+    // CubeManager::scramble("B' U' B2 D2 U R2 B2 U2 B2 U L2 B2 F D2 R B2 R F U F' D2");
     // CubeManager::rotate(FaceFlag::Front, RotationType::NORMAL);
     // CubeManager::rotate(FaceFlag::Top, RotationType::NORMAL);
     // CubeManager::rotate(FaceFlag::Back, RotationType::NORMAL);

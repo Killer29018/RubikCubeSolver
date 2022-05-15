@@ -22,7 +22,7 @@ public:
 
     void addFace(FaceFlag face);
 
-    void rotate(glm::vec3 rotation);
+    void rotate(glm::ivec3 rotation);
 
     void draw(KRE::Shader& shader);
 private:

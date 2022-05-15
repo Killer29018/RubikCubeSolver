@@ -42,9 +42,10 @@ void QB::addFace(FaceFlag face)
     }
 }
 
-void QB::rotate(glm::vec3 rotation)
+void QB::rotate(glm::ivec3 rotation)
 {
-    m_TotalRotation = glm::angleAxis(glm::radians(90.0f), rotation) * m_TotalRotation;
+    glm::vec3 rotationF = glm::vec3(rotation.x, rotation.y, rotation.z);
+    m_TotalRotation = glm::angleAxis(glm::radians(90.0f), rotationF) * m_TotalRotation;
 }
 
 void QB::draw(KRE::Shader& shader)
