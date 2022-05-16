@@ -186,6 +186,11 @@ void CubeManager::addMove(Move move)
     s_Moves.push(move);
 }
 
+FaceEnum CubeManager::getCurrentSide(FaceEnum targetFace, QB* qb)
+{
+    
+}
+
 void CubeManager::rotate(float dt)
 {
     if (s_Moves.empty())

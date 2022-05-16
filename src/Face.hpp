@@ -9,8 +9,11 @@
 
 class Face
 {
+public:
+    glm::ivec3 facing;
 protected:
     uint32_t m_VAO;
+
     static uint32_t s_EBO;
     static const uint32_t s_Indices[6];
 

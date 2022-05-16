@@ -16,7 +16,30 @@ void Solver::loadCube(QB**** cubies, uint16_t sizeX, uint16_t sizeY, uint16_t si
 
 void Solver::solve()
 {
+    solveCross();
+}
 
+void Solver::solveCross()
+{
+    FaceEnum face = FaceEnum::UP;
+    std::vector<glm::ivec3> whiteEdges = findQB(face, QBTypeEnum::EDGE);
+
+    for (glm::ivec3 pos : whiteEdges)
+    {
+        QB* current = s_Cubies[pos.z][pos.y][pos.x];
+
+        FaceEnum faces = current->activeFaces;
+        FaceEnum otherFace = (faces & face);
+
+        FaceEnum facing = current->getSide(face);
+        FaceEnum otherFacing = current->getSide(otherFace);
+
+        if (pos.y == 2 && facing == FaceEnum::UP)
+        {
+            std::cout << "In position\n";
+            continue;
+        }
+    }
 }
 
 std::vector<glm::ivec3> Solver::findQB(FaceEnum face, QBTypeEnum faceType)

@@ -37,7 +37,7 @@ void Face::uploadData(uint32_t& vbo, const float* vertexData, int size)
 
     glBufferData(GL_ARRAY_BUFFER, size, vertexData, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -47,13 +47,14 @@ void Face::uploadData(uint32_t& vbo, const float* vertexData, int size)
 void TopFace::generateFace()
 {
     const float vertices[] = {
-        // Position         Normals
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+        // Position
+        -0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
     };
 
+    facing = glm::ivec3(0, 1, 0);
     uint32_t vbo;
     uploadData(vbo, vertices, sizeof(vertices));
 }
@@ -61,13 +62,14 @@ void TopFace::generateFace()
 void BottomFace::generateFace()
 {
     const float vertices[] = {
-        // Position         Normals
-        -0.5f, -0.5f, -0.5f,  0.0f,-1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,-1.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,-1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,-1.0f, 0.0f,
+        // Position
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
     };
 
+    facing = glm::ivec3(0, -1, 0);
     uint32_t vbo;
     uploadData(vbo, vertices, sizeof(vertices));
 }
@@ -75,13 +77,14 @@ void BottomFace::generateFace()
 void FrontFace::generateFace()
 {
     const float vertices[] = {
-        // Position         Normals
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+        // Position
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
     };
 
+    facing = glm::ivec3(0, 0, 1);
     uint32_t vbo;
     uploadData(vbo, vertices, sizeof(vertices));
 }
@@ -89,13 +92,14 @@ void FrontFace::generateFace()
 void BackFace::generateFace()
 {
     const float vertices[] = {
-        // Position         Normals
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,
+        // Position
+        -0.5f, -0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
     };
 
+    facing = glm::ivec3(0, 0, -1);
     uint32_t vbo;
     uploadData(vbo, vertices, sizeof(vertices));
 }
@@ -103,13 +107,14 @@ void BackFace::generateFace()
 void LeftFace::generateFace()
 {
     const float vertices[] = {
-        // Position         Normals
-        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f, 0.0f, 0.0f,
+        // Position
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f,  0.5f,
     };
 
+    facing = glm::ivec3(-1, 0, 0);
     uint32_t vbo;
     uploadData(vbo, vertices, sizeof(vertices));
 }
@@ -117,13 +122,14 @@ void LeftFace::generateFace()
 void RightFace::generateFace()
 {
     const float vertices[] = {
-        // Position         Normals
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+        // Position
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
     };
 
+    facing = glm::ivec3(1, 0, 0);
     uint32_t vbo;
     uploadData(vbo, vertices, sizeof(vertices));
 }

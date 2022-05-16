@@ -4,6 +4,8 @@
 
 #include "InnerCube.hpp"
 
+#include <glm/gtx/string_cast.hpp>
+
 void QB::addFace(FaceEnum face)
 {
     if ((face & FaceEnum::UP) == FaceEnum::UP)
@@ -92,4 +94,35 @@ void QB::draw(KRE::Shader& shader)
         m_Faces.at(FaceEnum::RIGHT).draw(shader);
 
     InnerCube::draw(shader, model);
+}
+
+FaceEnum QB::getSide(FaceEnum face)
+{
+    glm::ivec3 normal = getFaceNormal(face);
+
+    if (normal.x == 1)
+        return FaceEnum::RIGHT;
+    else if (normal.x == -1)
+        return FaceEnum::LEFT;
+    else if (normal.y == 1)
+        return FaceEnum::UP;
+    else if (normal.y == -1)
+        return FaceEnum::DOWN;
+    else if (normal.z == 1)
+        return FaceEnum::FRONT;
+    else if (normal.z == -1)
+        return FaceEnum::BACK;
+
+    else
+        return static_cast<FaceEnum>(0);
+}
+
+glm::ivec3 QB::getFaceNormal(FaceEnum face)
+{
+    if ((activeFaces & face) != face)
+        return glm::vec3(0, 0, 0);
+
+    Face* f = &m_Faces.at(face);
+
+    glm::ivec3 returnVec = glm::ivec3(glm::vec3(f->facing) * m_TotalRotation);
 }

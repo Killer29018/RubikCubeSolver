@@ -33,6 +33,8 @@ public:
     static void scramble(std::string input);
 
     static void addMove(Move move);
+
+    static FaceEnum getCurrentSide(FaceEnum targetFace, QB* qb);
 private:
     CubeManager() = default;
 

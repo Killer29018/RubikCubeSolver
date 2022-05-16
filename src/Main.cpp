@@ -22,6 +22,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void processKeys(KRE::Camera& camera);
 
+// TODO: Add two seperate arrays for CubeManager. One for animating, One for data
+
 int main()
 {
     GLFWwindow* window;
@@ -146,16 +148,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
         CubeManager::scramble("R2 L2 F2 B2 D2 U2");
-    if (key == GLFW_KEY_H && action == GLFW_PRESS)
-    {
-        std::vector<glm::ivec3> whiteEdges = Solver::findQB(FaceEnum::UP, QBTypeEnum::EDGE);
-
-        for (glm::ivec3 i : whiteEdges)
-        {
-            std::cout << glm::to_string(i) << "\n";
-        }
-        std::cout << "\n";
-    }
+    if (key == GLFW_KEY_V && action == GLFW_PRESS)
+        Solver::solve();
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
         CubeManager::addMove({ FaceEnum::RIGHT, rotation });
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
