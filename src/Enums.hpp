@@ -5,10 +5,10 @@
 
 enum class RotationEnum
 {
-    NONE    = 0,
-    NORMAL  = 1,
-    TWICE   = 2,
-    PRIME   = 3,
+    PRIME   = -1,
+    NONE    =  0,
+    NORMAL  =  1,
+    TWICE   =  2,
 };
 
 enum class FaceEnum : uint8_t

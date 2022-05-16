@@ -2,6 +2,8 @@
 
 #include <glm/gtx/quaternion.hpp>
 
+#include "InnerCube.hpp"
+
 void QB::addFace(FaceEnum face)
 {
     if ((face & FaceEnum::UP) == FaceEnum::UP)
@@ -42,16 +44,18 @@ void QB::addFace(FaceEnum face)
     }
 }
 
-void QB::rotate(glm::ivec3 rotation, float percentage)
+void QB::rotate(glm::ivec3 rotation, float percentage, int8_t angleMult)
 {
     glm::vec3 rotationF = glm::vec3(rotation.x, rotation.y, rotation.z);
+    float angle = 90.0f * angleMult;
     if (percentage < 1.0f)
     {
-        m_TempRotation = glm::angleAxis(glm::radians(90.0f * percentage), rotationF);
+        angle *= percentage;
+        m_TempRotation = glm::angleAxis(glm::radians(angle), rotationF);
     }
     else
     {
-        m_TotalRotation = glm::angleAxis(glm::radians(90.0f), rotationF) * m_TotalRotation;
+        m_TotalRotation = glm::angleAxis(glm::radians(angle), rotationF) * m_TotalRotation;
         m_TempRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     }
 }
@@ -86,4 +90,6 @@ void QB::draw(KRE::Shader& shader)
         m_Faces.at(FaceEnum::LEFT).draw(shader);
     if ((activeFaces & FaceEnum::RIGHT) == FaceEnum::RIGHT)
         m_Faces.at(FaceEnum::RIGHT).draw(shader);
+
+    InnerCube::draw(shader, model);
 }

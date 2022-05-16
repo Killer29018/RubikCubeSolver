@@ -35,7 +35,7 @@ int main()
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_SAMPLES, 4);
 
-    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cubes", NULL, NULL);
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Rubix Cube", NULL, NULL);
 
     if (!window)
     {
@@ -76,7 +76,7 @@ int main()
     shader.setUniformMatrix4("u_Projection", projection);
 
     CubeManager::generate(3, 3, 3);
-    CubeManager::scramble("L2 F2 L2 U' B2 U B2 L2 F2 R2 F' D L2 U B' L2 R U R2 B'");
+    // CubeManager::scramble("F' L' R2 F2 D F2 L2 D2 L2 D2 R2 U' L' D' B' U R F' L");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -135,18 +135,25 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (action == GLFW_RELEASE)
         KRE::Keyboard::unpressKey(key);
 
+    RotationEnum rotation = RotationEnum::NORMAL;
+
+    if (mods == GLFW_MOD_SHIFT)
+        rotation = RotationEnum::PRIME;
+
+    if (key == GLFW_KEY_C && action == GLFW_PRESS)
+        CubeManager::scramble("R2 L2 F2 B2 D2 U2");
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::RIGHT, RotationEnum::NORMAL });
+        CubeManager::addMove({ FaceEnum::RIGHT, rotation });
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::LEFT, RotationEnum::NORMAL });
+        CubeManager::addMove({ FaceEnum::LEFT, rotation });
     if (key == GLFW_KEY_U && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::UP, RotationEnum::NORMAL });
+        CubeManager::addMove({ FaceEnum::UP, rotation });
     if (key == GLFW_KEY_X && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+        CubeManager::addMove({ FaceEnum::DOWN, rotation });
     if (key == GLFW_KEY_F && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::FRONT, RotationEnum::NORMAL });
+        CubeManager::addMove({ FaceEnum::FRONT, rotation });
     if (key == GLFW_KEY_B && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::BACK, RotationEnum::NORMAL });
+        CubeManager::addMove({ FaceEnum::BACK, rotation });
 }
 
 void processKeys(KRE::Camera& camera)

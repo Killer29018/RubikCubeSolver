@@ -23,7 +23,7 @@ public:
 
     void addFace(FaceEnum face);
 
-    void rotate(glm::ivec3 rotation, float percentage);
+    void rotate(glm::ivec3 rotation, float percentage, int8_t angleMult = 1);
 
     void draw(KRE::Shader& shader);
 private:
