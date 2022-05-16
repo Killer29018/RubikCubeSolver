@@ -13,12 +13,12 @@ std::queue<Move> CubeManager::s_Moves;
 
 void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
 {
-    InnerCube::generate();
-    Face::generateData();
-
     s_SizeX = sizeX;
     s_SizeY = sizeY;
     s_SizeZ = sizeZ;
+
+    InnerCube::generate();
+    Face::generateData();
 
     if (s_SizeX != s_SizeY || s_SizeX != s_SizeY)
     { 
@@ -98,6 +98,8 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
     {
         s_SwapIndices.emplace_back(0, size - 1 - i);
     }
+
+    Solver::loadCube(s_Cubies, s_SizeX, s_SizeY, s_SizeZ);
 }
 
 void CubeManager::destroy()
@@ -197,7 +199,7 @@ void CubeManager::rotate(float dt)
         return;
     }
 
-    float percentage = 1.0f - move.time;
+    float percentage = move.time;
      
     glm::ivec3 rotationAxis;
     uint32_t position;
@@ -262,13 +264,12 @@ void CubeManager::rotate(float dt)
                 swapCW(position, s_SizeX, rotationAxis, percentage, rotationInt);
             break;
     }
-    // }
 
-    if (move.time <= 0)
+    if (move.time >= 1)
     {
         s_Moves.pop();
     }
-    move.time -= dt;
+    move.time += dt / Move::seconds;
 }
 
 glm::vec3 CubeManager::coordsToPosition(uint16_t x, uint16_t y, uint16_t z)

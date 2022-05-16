@@ -21,6 +21,13 @@ enum class FaceEnum : uint8_t
     RIGHT   = 1 << 5,
 };
 
+enum class QBTypeEnum : uint8_t
+{
+    CENTER = 1,
+    EDGE = 2,
+    CORNER = 3,
+};
+
 namespace std
 {
     template<>
@@ -50,10 +57,11 @@ inline FaceEnum& operator|=(FaceEnum& lhs, const FaceEnum& rhs)
 
 struct Move
 {
+    inline static float seconds = 1.0f;
     FaceEnum face;
     RotationEnum rotation;
 
-    float time = 1.0f;
+    float time = 0.0f;
 
     Move() = default;
     Move(FaceEnum face) : face(face), rotation(RotationEnum::NONE) {}

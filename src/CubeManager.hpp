@@ -5,6 +5,7 @@
 #include "KRE/KRE.hpp"
 #include "Enums.hpp"
 #include "InnerCube.hpp"
+#include "Solver.hpp"
 
 #include "QB.hpp"
 

@@ -26,6 +26,9 @@ public:
     void rotate(glm::ivec3 rotation, float percentage, int8_t angleMult = 1);
 
     void draw(KRE::Shader& shader);
+
+    size_t getFaceCount() { return m_Faces.size(); }
+    bool hasFace(FaceEnum face) { return (activeFaces & face) == face; }
 private:
 };
 

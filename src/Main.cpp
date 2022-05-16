@@ -64,6 +64,7 @@ int main()
     glEnable(GL_MULTISAMPLE);
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+    camera.setPosition({ 0.0f, 2.0f, 5.0f });
     camera.setCameraPerspective(KRE::CameraPerspective::PERSPECTIVE);
     camera.setCameraMovement(KRE::CameraMovementTypes::FREE_FLY);
 
@@ -76,7 +77,10 @@ int main()
     shader.setUniformMatrix4("u_Projection", projection);
 
     CubeManager::generate(3, 3, 3);
-    // CubeManager::scramble("F' L' R2 F2 D F2 L2 D2 L2 D2 R2 U' L' D' B' U R F' L");
+    Move::seconds = 0.2f;
+    // CubeManager::scramble("L2 B2 U2 B' L2 F2 L2 D2 B' R2 B R2 D' F' U' R2 D2 L B R D2");
+    // CubeManager::scramble("U B D' F2 D B' U' R2 D F2 D' R2 D F2 D' R2");
+    // CubeManager::scramble("U D' R L' F B' U D'");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -142,6 +146,16 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
         CubeManager::scramble("R2 L2 F2 B2 D2 U2");
+    if (key == GLFW_KEY_H && action == GLFW_PRESS)
+    {
+        std::vector<glm::ivec3> whiteEdges = Solver::findQB(FaceEnum::UP, QBTypeEnum::EDGE);
+
+        for (glm::ivec3 i : whiteEdges)
+        {
+            std::cout << glm::to_string(i) << "\n";
+        }
+        std::cout << "\n";
+    }
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
         CubeManager::addMove({ FaceEnum::RIGHT, rotation });
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
