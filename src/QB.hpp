@@ -30,7 +30,7 @@ public:
     size_t getFaceCount() { return m_Faces.size(); }
     bool hasFace(FaceEnum face) { return (activeFaces & face) == face; }
 
-    FaceEnum getSide(FaceEnum face);
+    FaceEnum getFacingSide(FaceEnum face);
     glm::ivec3 getFaceNormal(FaceEnum face);
 private:
 };

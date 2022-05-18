@@ -96,7 +96,7 @@ void QB::draw(KRE::Shader& shader)
     InnerCube::draw(shader, model);
 }
 
-FaceEnum QB::getSide(FaceEnum face)
+FaceEnum QB::getFacingSide(FaceEnum face)
 {
     glm::ivec3 normal = getFaceNormal(face);
 
@@ -124,5 +124,11 @@ glm::ivec3 QB::getFaceNormal(FaceEnum face)
 
     Face* f = &m_Faces.at(face);
 
-    glm::ivec3 returnVec = glm::ivec3(glm::vec3(f->facing) * m_TotalRotation);
+    glm::vec3 newFacing = glm::vec3(glm::vec4(f->facing, 1.0f) * glm::toMat4(m_TotalRotation));
+
+    glm::ivec3 returnVector;
+    returnVector.x = std::round(newFacing.x);
+    returnVector.y = std::round(newFacing.y);
+    returnVector.z = std::round(newFacing.z);
+    return returnVector;
 }

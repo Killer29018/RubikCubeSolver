@@ -34,7 +34,8 @@ public:
 
     static void addMove(Move move);
 
-    static FaceEnum getCurrentSide(FaceEnum targetFace, QB* qb);
+    static glm::ivec2 getLocalPos(glm::ivec3 pos, FaceEnum face);
+    static LocalEdgeEnum getLocalEdge(glm::ivec3 pos, FaceEnum face);
 private:
     CubeManager() = default;
 

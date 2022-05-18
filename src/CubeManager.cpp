@@ -186,9 +186,78 @@ void CubeManager::addMove(Move move)
     s_Moves.push(move);
 }
 
-FaceEnum CubeManager::getCurrentSide(FaceEnum targetFace, QB* qb)
+glm::ivec2 CubeManager::getLocalPos(glm::ivec3 pos, FaceEnum face)
 {
-    
+    glm::ivec2 localPos(0);
+    switch (face)
+    {
+    case FaceEnum::UP: // Y is locked
+        localPos.x = pos.x;
+        localPos.y = s_SizeZ - 1 - pos.z;
+        break;
+    case FaceEnum::DOWN:
+        localPos.x = pos.x;
+        localPos.y = pos.z;
+        break;
+
+    case FaceEnum::LEFT: // X is locked
+        localPos.x = pos.z;
+        localPos.y = pos.y;
+        break;
+    case FaceEnum::RIGHT:
+        localPos.x = s_SizeZ - 1 - pos.z;
+        localPos.y = pos.y;
+        break;
+
+    case FaceEnum::FRONT: // Z is locked
+        localPos.x = pos.x;
+        localPos.y = pos.y;
+        break;
+    case FaceEnum::BACK:
+        localPos.x = s_SizeX - 1 - pos.x;
+        localPos.y = pos.y;
+        break;
+    }
+
+    return localPos;
+}
+
+LocalEdgeEnum CubeManager::getLocalEdge(glm::ivec3 pos, FaceEnum face)
+{
+    glm::ivec2 localPos = getLocalPos(pos, face);
+
+    // Fixed Size
+    if (localPos.x == 0)
+        return LocalEdgeEnum::LEFT;
+    else if (localPos.y == 0)
+        return LocalEdgeEnum::BOTTOM;
+
+    // Variable Size
+    switch (face)
+    {
+    case FaceEnum::UP:
+    case FaceEnum::DOWN:
+        if (localPos.x == s_SizeX - 1)
+            return LocalEdgeEnum::RIGHT;
+        else if (localPos.y == s_SizeZ - 1)
+            return LocalEdgeEnum::TOP;
+
+    case FaceEnum::LEFT:
+    case FaceEnum::RIGHT:
+        if (localPos.x == s_SizeZ - 1)
+            return LocalEdgeEnum::RIGHT;
+        else if (localPos.y == s_SizeY - 1)
+            return LocalEdgeEnum::TOP;
+
+    case FaceEnum::FRONT:
+    case FaceEnum::BACK:
+        if (localPos.x == s_SizeX - 1)
+            return LocalEdgeEnum::RIGHT;
+        else if (localPos.y == s_SizeY - 1)
+            return LocalEdgeEnum::TOP;
+    }
+
+    assert(false && "Not reachable");
 }
 
 void CubeManager::rotate(float dt)
