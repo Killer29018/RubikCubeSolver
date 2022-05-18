@@ -12,18 +12,24 @@ class QB
 public:
     FaceEnum activeFaces = static_cast<FaceEnum>(0);
     glm::vec3 pos;
+    glm::ivec3 index;
 private:
     std::unordered_map<FaceEnum, Face> m_Faces;
-    // std::vector<glm::vec3> m_Rotations;
-    glm::quat m_TotalRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+
+    // AnimationRotation
+    glm::quat m_CurrentRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     glm::quat m_TempRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+
+    // Future
+    glm::quat m_FutureRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 public:
     QB() = default;
-    QB(glm::vec3 pos) : pos(pos) {};
+    QB(glm::vec3 pos, glm::ivec3 index) : pos(pos), index(index) {};
 
     void addFace(FaceEnum face);
 
     void rotate(glm::ivec3 rotation, float percentage, int8_t angleMult = 1);
+    void rotateCurrent(glm::ivec3 rotation, int8_t angleMult);
 
     void draw(KRE::Shader& shader);
 

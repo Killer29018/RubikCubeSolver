@@ -7,6 +7,11 @@ uint16_t Solver::s_SizeX;
 uint16_t Solver::s_SizeY;
 uint16_t Solver::s_SizeZ;
 
+static int positiveMod(int i, int n)
+{
+    return (i % n + n) % n;
+}
+
 void Solver::loadCube(QB**** cubies, uint16_t sizeX, uint16_t sizeY, uint16_t sizeZ)
 {
     s_Cubies = cubies;
@@ -24,11 +29,12 @@ void Solver::solve()
 void Solver::solveCross()
 {
     FaceEnum face = FaceEnum::UP;
-    std::vector<glm::ivec3> whiteEdges = findQB(face, QBTypeEnum::EDGE);
+    std::vector<QB*> whiteEdges = findQB(face, QBTypeEnum::EDGE);
 
-    for (glm::ivec3 pos : whiteEdges)
+    for (int i = 0; i < whiteEdges.size(); i++)
     {
-        QB* current = s_Cubies[pos.z][pos.y][pos.x];
+        QB* current = whiteEdges[i];
+        glm::ivec3 pos = current->index;
 
         FaceEnum faces = current->activeFaces;
         FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(faces) & ~static_cast<int>(face));
@@ -40,9 +46,11 @@ void Solver::solveCross()
         {
             if (facing == FaceEnum::UP) // Facing Correct Way
             {
-                std::cout << "In position\n";
                 continue;
             }
+
+            // On top facing sideways
+            assert(false && "Not implemented"); // TODO
         }
         else if (pos.y != 0) // Middle Row
         {
@@ -50,27 +58,30 @@ void Solver::solveCross()
 
             if (otherFacing == otherFace)
             {
+                // In the middle row with the otherface on the correct side, so move to top of cube
                 switch(localEdge)
                 {
                 case LocalEdgeEnum::LEFT:
-                    CubeManager::addMove({ otherFacing, RotationEnum::NONE });
+                    CubeManager::doMove({ otherFacing, RotationEnum::NORMAL });
                     break;
                 case LocalEdgeEnum::RIGHT:
-                    CubeManager::addMove({ otherFacing, RotationEnum::PRIME });
+                    CubeManager::doMove({ otherFacing, RotationEnum::PRIME });
                     break;
                 default:
                     assert(false && "Unreachable, qb shouldn't be in top or bottom position");
                 }
+
                 continue;
             }
 
+            // In the middle row with the otherface not on the correct side, so move to bottom of cube
             switch (localEdge)
             {
                 case LocalEdgeEnum::LEFT:
-                    CubeManager::addMove({ otherFacing, RotationEnum::PRIME });
+                    CubeManager::doMove({ otherFacing, RotationEnum::PRIME });
                     break;
                 case LocalEdgeEnum::RIGHT:
-                    CubeManager::addMove({ otherFacing, RotationEnum::NORMAL });
+                    CubeManager::doMove({ otherFacing, RotationEnum::NORMAL });
                     break;
                 default:
                     assert(false && "Unreachable. qb shouldn't be in top or bottom position");
@@ -80,27 +91,40 @@ void Solver::solveCross()
         // QB is on bottom face
         if (otherFace == otherFacing) // Correct side
         {
-            CubeManager::addMove({ otherFacing, RotationEnum::TWICE });
+            if (facing == FaceEnum::DOWN) // Facing Down
+            {
+                CubeManager::doMove({ otherFacing, RotationEnum::TWICE });
+                continue;
+            }
+
+            // Facing Sideways
+            assert(false && "Not Implemented"); // TODO
         }
         else // Wrong Side
         {
-            int currentInt = (int)std::log2(static_cast<int>(otherFacing));
-            int targetInt = (int)std::log2(static_cast<int>(otherFace));
+            if (facing == FaceEnum::DOWN) // Facing Down
+            {
+                int currentInt = (int)std::log2(static_cast<int>(otherFacing));
+                int targetInt = (int)std::log2(static_cast<int>(otherFace));
 
-            int change = ((targetInt - currentInt + 1) % 4) - 1;
-            std::cout << currentInt << " : " << targetInt << " : " << change << "\n";
+                int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
 
-            RotationEnum rotation = static_cast<RotationEnum>(change);
+                RotationEnum rotation = static_cast<RotationEnum>(change);
 
-            CubeManager::addMove({ FaceEnum::DOWN, rotation });
-            CubeManager::addMove({ otherFace, RotationEnum::TWICE });
+                CubeManager::doMove({ FaceEnum::DOWN, rotation });
+                CubeManager::doMove({ otherFace, RotationEnum::TWICE });
+                continue;
+            }
+
+            // Facing Sideways
+            assert(false && "Not implemented solving on bottom face wrong direction"); // TODO
         }
     }
 }
 
-std::vector<glm::ivec3> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
+std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
 {
-    std::vector<glm::ivec3> edges;
+    std::vector<QB*> edges;
     for (int z = 0; z < s_SizeZ; z++)
     {
         for (int y = 0; y < s_SizeY; y++)
@@ -110,7 +134,7 @@ std::vector<glm::ivec3> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
                 size_t count = s_Cubies[z][y][x]->getFaceCount();
                 if (count == static_cast<int>(faceType) && s_Cubies[z][y][x]->hasFace(face))
                 {
-                    edges.emplace_back(x, y, z);
+                    edges.push_back(s_Cubies[z][y][x]);
                 }
             }
         }

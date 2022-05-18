@@ -15,7 +15,8 @@
 class CubeManager
 {
 private:
-    static QB**** s_Cubies;
+    static QB**** s_Cubies; // Graphical Positions
+    static QB**** s_CurrentCubies; // Positions in memory
 
     static std::vector<glm::ivec2> s_SwapIndices;
 
@@ -32,24 +33,31 @@ public:
 
     static void scramble(std::string input);
 
-    static void addMove(Move move);
+    static void doMove(Move move);
 
     static glm::ivec2 getLocalPos(glm::ivec3 pos, FaceEnum face);
     static LocalEdgeEnum getLocalEdge(glm::ivec3 pos, FaceEnum face);
 private:
     CubeManager() = default;
 
-    static void rotate(float dt);
-
     static glm::vec3 coordsToPosition(uint16_t x, uint16_t y, uint16_t z);
-
     static glm::ivec3 getCurrentIndex(uint16_t constant, glm::ivec3 axis, glm::ivec2 swapPosition);
+
+    static void rotate(float dt);
 
     static void swapCW(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, float percentage, int8_t angleMult);
     static void swapCCW(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, float percentage, int8_t angleMult);
 
     static void getSavedPositionsCW(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis);
     static void getSavedPositionsCCW(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis);
+
+    static void rotateCurrent(Move& move);
+
+    static void swapCWCurrent(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, int8_t angleMult);
+    static void swapCCWCurrent(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, int8_t angleMult);
+
+    static void getSavedPositionsCWCurrent(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis);
+    static void getSavedPositionsCCWCurrent(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis);
 };
 
 #endif

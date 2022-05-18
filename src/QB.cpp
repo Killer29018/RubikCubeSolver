@@ -57,9 +57,16 @@ void QB::rotate(glm::ivec3 rotation, float percentage, int8_t angleMult)
     }
     else
     {
-        m_TotalRotation = glm::angleAxis(glm::radians(angle), rotationF) * m_TotalRotation;
+        m_CurrentRotation = glm::angleAxis(glm::radians(angle), rotationF) * m_CurrentRotation;
         m_TempRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     }
+}
+
+void QB::rotateCurrent(glm::ivec3 rotation, int8_t angleMult)
+{
+    glm::vec3 rotationF = glm::vec3(rotation.x, rotation.y, rotation.z);
+    float angle = 90.0f * angleMult;
+    m_FutureRotation = glm::angleAxis(glm::radians(angle), rotationF) * m_FutureRotation;
 }
 
 void QB::draw(KRE::Shader& shader)
@@ -67,10 +74,9 @@ void QB::draw(KRE::Shader& shader)
     glm::mat4 model(1.0f);
     glm::mat4 translation(1.0f);
     glm::mat4 scale(1.0f);
-
     glm::mat4 rotation(1.0f);
 
-    rotation = glm::toMat4(m_TotalRotation);
+    rotation = glm::toMat4(m_CurrentRotation);
     glm::mat4 tempRotation = glm::toMat4(m_TempRotation);
     translation = glm::translate(translation, pos);
     scale = glm::scale(scale, glm::vec3(0.99f));
@@ -124,7 +130,8 @@ glm::ivec3 QB::getFaceNormal(FaceEnum face)
 
     Face* f = &m_Faces.at(face);
 
-    glm::vec3 newFacing = glm::vec3(glm::vec4(f->facing, 1.0f) * glm::toMat4(m_TotalRotation));
+    glm::vec4 newFacing = glm::vec4(f->facing, 0.0f);
+    newFacing = glm::rotate(m_FutureRotation, newFacing);
 
     glm::ivec3 returnVector;
     returnVector.x = std::round(newFacing.x);

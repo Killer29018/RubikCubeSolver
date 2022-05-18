@@ -23,7 +23,7 @@ private:
     Solver() {}
     static void solveCross();
 
-    static std::vector<glm::ivec3> findQB(FaceEnum face, QBTypeEnum faceType);
+    static std::vector<QB*> findQB(FaceEnum face, QBTypeEnum faceType);
 };
 
 #endif

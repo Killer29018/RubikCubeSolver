@@ -3,6 +3,8 @@
 #include <glm/gtx/string_cast.hpp>
 
 QB**** CubeManager::s_Cubies;
+QB**** CubeManager::s_CurrentCubies;
+
 std::vector<glm::ivec2> CubeManager::s_SwapIndices;
 
 uint8_t CubeManager::s_SizeX;
@@ -26,8 +28,8 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
     }
     assert(s_SizeZ == 3 && "Only a 3x3 Cube is currently supported");
 
-
     s_Cubies = new QB***[sizeZ];
+    s_CurrentCubies = new QB***[sizeZ];
 
     float lowestX = (float)((sizeX - 1) / 2.0f) - (sizeX - 1);
     float lowestY = (float)((sizeY - 1) / 2.0f) - (sizeY - 1);
@@ -36,15 +38,21 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
     for (int i = 0; i < sizeZ; i++)
     {
         s_Cubies[i] = new QB**[sizeY];
+        s_CurrentCubies[i] = new QB**[sizeY];
         for (int j = 0; j < sizeY; j++)
         {
             s_Cubies[i][j] = new QB*[sizeX];
+            s_CurrentCubies[i][j] = new QB*[sizeX];
 
             for (int k = 0; k < sizeX; k++)
             {
                 glm::vec3 pos(lowestX + k, lowestY + j, lowestZ + i);
+                glm::ivec3 index(k, j, i);
 
-                s_Cubies[i][j][k] = new QB(pos);
+                QB* qb = new QB(pos, index);
+
+                s_Cubies[i][j][k] = qb;
+                s_CurrentCubies[i][j][k] = qb;
             }
         }
     }
@@ -99,7 +107,7 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
         s_SwapIndices.emplace_back(0, size - 1 - i);
     }
 
-    Solver::loadCube(s_Cubies, s_SizeX, s_SizeY, s_SizeZ);
+    Solver::loadCube(s_CurrentCubies, s_SizeX, s_SizeY, s_SizeZ);
 }
 
 void CubeManager::destroy()
@@ -171,18 +179,19 @@ void CubeManager::scramble(std::string input)
 
         switch (c)
         {
-            case 'U': addMove({ FaceEnum::UP,       rotation }); break;
-            case 'D': addMove({ FaceEnum::DOWN,     rotation }); break;
-            case 'L': addMove({ FaceEnum::LEFT,     rotation }); break;
-            case 'R': addMove({ FaceEnum::RIGHT,    rotation }); break;
-            case 'F': addMove({ FaceEnum::FRONT,    rotation }); break;
-            case 'B': addMove({ FaceEnum::BACK,     rotation }); break;
+            case 'U': doMove({ FaceEnum::UP,       rotation }); break;
+            case 'D': doMove({ FaceEnum::DOWN,     rotation }); break;
+            case 'L': doMove({ FaceEnum::LEFT,     rotation }); break;
+            case 'R': doMove({ FaceEnum::RIGHT,    rotation }); break;
+            case 'F': doMove({ FaceEnum::FRONT,    rotation }); break;
+            case 'B': doMove({ FaceEnum::BACK,     rotation }); break;
         }
     }
 }
 
-void CubeManager::addMove(Move move)
+void CubeManager::doMove(Move move)
 {
+    rotateCurrent(move);
     s_Moves.push(move);
 }
 
@@ -258,6 +267,41 @@ LocalEdgeEnum CubeManager::getLocalEdge(glm::ivec3 pos, FaceEnum face)
     }
 
     assert(false && "Not reachable");
+}
+
+glm::vec3 CubeManager::coordsToPosition(uint16_t x, uint16_t y, uint16_t z)
+{
+    glm::vec3 returnVec(0.0f);
+    returnVec.x = (float)(((s_SizeX - 1) / 2.0f) - (s_SizeX - 1)) + x;
+    returnVec.y = (float)(((s_SizeY - 1) / 2.0f) - (s_SizeY - 1)) + y;
+    returnVec.z = (float)(((s_SizeZ - 1) / 2.0f) - (s_SizeZ - 1)) + z;
+
+    return returnVec;
+}
+
+glm::ivec3 CubeManager::getCurrentIndex(uint16_t constant, glm::ivec3 axis, glm::ivec2 swapPosition)
+{
+    glm::ivec3 index(0);
+    if (axis.x != 0)
+    {
+        index.x = swapPosition.x;
+        index.y = swapPosition.y;
+        index.z = constant;
+    }
+    else if (axis.y != 0)
+    {
+        index.x = swapPosition.x;
+        index.y = constant;
+        index.z = swapPosition.y;
+    }
+    else if (axis.z != 0)
+    {
+        index.x = constant;
+        index.y = swapPosition.x;
+        index.z = swapPosition.y;
+    }
+
+    return index;
 }
 
 void CubeManager::rotate(float dt)
@@ -346,41 +390,6 @@ void CubeManager::rotate(float dt)
     move.time += dt / Move::seconds;
 }
 
-glm::vec3 CubeManager::coordsToPosition(uint16_t x, uint16_t y, uint16_t z)
-{
-    glm::vec3 returnVec(0.0f);
-    returnVec.x = (float)(((s_SizeX - 1) / 2.0f) - (s_SizeX - 1)) + x;
-    returnVec.y = (float)(((s_SizeY - 1) / 2.0f) - (s_SizeY - 1)) + y;
-    returnVec.z = (float)(((s_SizeZ - 1) / 2.0f) - (s_SizeZ - 1)) + z;
-
-    return returnVec;
-}
-
-glm::ivec3 CubeManager::getCurrentIndex(uint16_t constant, glm::ivec3 axis, glm::ivec2 swapPosition)
-{
-    glm::ivec3 index(0);
-    if (axis.x != 0)
-    {
-        index.x = swapPosition.x;
-        index.y = swapPosition.y;
-        index.z = constant;
-    }
-    else if (axis.y != 0)
-    {
-        index.x = swapPosition.x;
-        index.y = constant;
-        index.z = swapPosition.y;
-    }
-    else if (axis.z != 0)
-    {
-        index.x = constant;
-        index.y = swapPosition.x;
-        index.z = swapPosition.y;
-    }
-
-    return index;
-}
-
 void CubeManager::swapCW(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, float percentage, int8_t angleMult)
 {
     bool completed = false;
@@ -399,6 +408,7 @@ void CubeManager::swapCW(uint16_t constant, uint16_t width, glm::ivec3 rotationA
 
             currentIndex = getCurrentIndex(constant, rotationAxis, currentPos);
             nextIndex = getCurrentIndex(constant, rotationAxis, nextPos);
+
 
             if (percentage >= 1.0f)
             {
@@ -511,6 +521,184 @@ void CubeManager::getSavedPositionsCCW(std::vector<QB*>& stored, int width, uint
         glm::ivec3 index = getCurrentIndex(constant, axis, swapPosition);
 
         QB* last = s_Cubies[index.x][index.y][index.z];
+        stored.push_back(last);
+    }
+}
+
+void CubeManager::rotateCurrent(Move& move)
+{
+    if (move.rotation == RotationEnum::NONE)
+        return;
+
+    glm::ivec3 rotationAxis;
+    uint32_t position;
+
+    int rotationInt = static_cast<int>(move.rotation);
+
+    switch (move.face)
+    {
+        case FaceEnum::UP:
+            rotationAxis = glm::vec3(0, -1, 0);
+            position = s_SizeY - 1;
+            if (move.rotation == RotationEnum::PRIME)
+                swapCCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+            else
+                swapCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+
+            break;
+
+        case FaceEnum::DOWN:
+            rotationAxis = glm::vec3(0, 1, 0);
+            position = 0;
+
+            if (move.rotation == RotationEnum::PRIME)
+                swapCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+            else
+                swapCCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+            break;
+
+        case FaceEnum::RIGHT:
+            rotationAxis = glm::vec3(-1, 0, 0);
+            position = s_SizeX - 1;
+            if (move.rotation == RotationEnum::PRIME)
+                swapCWCurrent(position, s_SizeZ, rotationAxis, rotationInt);
+            else
+                swapCCWCurrent(position, s_SizeZ, rotationAxis, rotationInt);
+            break;
+
+        case FaceEnum::LEFT:
+            rotationAxis = glm::vec3(1, 0, 0);
+            position = 0;
+            if (move.rotation == RotationEnum::PRIME)
+                swapCCWCurrent(position, s_SizeZ, rotationAxis, rotationInt);
+            else
+                swapCWCurrent(position, s_SizeZ, rotationAxis, rotationInt);
+            break;
+
+        case FaceEnum::FRONT:
+            rotationAxis = glm::vec3(0, 0, -1);
+            position = s_SizeZ - 1;
+            if (move.rotation == RotationEnum::PRIME)
+                swapCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+            else
+                swapCCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+            break;
+
+        case FaceEnum::BACK:
+            rotationAxis = glm::vec3(0, 0, 1);
+            position = 0;
+            if (move.rotation == RotationEnum::PRIME)
+                swapCCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+            else
+                swapCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+            break;
+    }
+}
+
+void CubeManager::swapCWCurrent(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, int8_t angleMult)
+{
+    bool completed = false;
+    for (int i = 0; i < std::abs(angleMult); i++)
+    {
+        std::vector<QB*> stored;
+        getSavedPositionsCWCurrent(stored, width, constant, rotationAxis);
+
+        glm::ivec2 currentPos, nextPos;
+        glm::ivec3 currentIndex, nextIndex;
+
+        for (size_t i = 0; i < s_SwapIndices.size() - (width - 1); i++)
+        {
+            currentPos = s_SwapIndices.at(i);
+            nextPos = s_SwapIndices.at(i + 2);
+
+            currentIndex = getCurrentIndex(constant, rotationAxis, currentPos);
+            nextIndex = getCurrentIndex(constant, rotationAxis, nextPos);
+
+            s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z] = s_CurrentCubies[nextIndex.x][nextIndex.y][nextIndex.z];
+            s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z]->index = glm::ivec3(currentIndex.z, currentIndex.y, currentIndex.x);
+
+            if (!completed)
+                s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z]->rotateCurrent(rotationAxis, angleMult);
+        }
+
+        for (size_t i = 0; i < stored.size(); i++)
+        {
+            currentPos = s_SwapIndices.at(s_SwapIndices.size() - 1 - (width - 2) + i);
+            currentIndex = getCurrentIndex(constant, rotationAxis, currentPos);
+
+            s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z] = stored[i];
+            s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z]->index = glm::ivec3(currentIndex.z, currentIndex.y, currentIndex.x);
+
+            if (!completed)
+                s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z]->rotateCurrent(rotationAxis, angleMult);
+        }
+        completed = true;
+    }
+}
+
+void CubeManager::swapCCWCurrent(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, int8_t angleMult)
+{
+    bool completed = false;
+    for (int i = 0; i < std::abs(angleMult); i++)
+    {
+        std::vector<QB*> stored;
+        getSavedPositionsCCWCurrent(stored, width, constant, rotationAxis);
+
+        glm::ivec2 currentPos, nextPos;
+        glm::ivec3 currentIndex, nextIndex;
+
+        for (size_t i = s_SwapIndices.size() - 1; i >= width - 1; i--)
+        {
+            currentPos = s_SwapIndices.at(i);
+            nextPos = s_SwapIndices.at(i - 2);
+
+            currentIndex = getCurrentIndex(constant, rotationAxis, currentPos);
+            nextIndex = getCurrentIndex(constant, rotationAxis, nextPos);
+
+            s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z] = s_CurrentCubies[nextIndex.x][nextIndex.y][nextIndex.z];
+            s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z]->index = glm::ivec3(currentIndex.z, currentIndex.y, currentIndex.x);
+
+            if (!completed)
+                s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z]->rotateCurrent(rotationAxis, angleMult);
+        }
+
+        for (size_t i = 0; i < stored.size(); i++)
+        {
+            currentPos = s_SwapIndices.at(i);
+            currentIndex = getCurrentIndex(constant, rotationAxis, currentPos);
+
+            s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z] = stored[i];
+            s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z]->index = glm::ivec3(currentIndex.z, currentIndex.y, currentIndex.x);
+
+            if (!completed)
+                s_CurrentCubies[currentIndex.x][currentIndex.y][currentIndex.z]->rotateCurrent(rotationAxis, angleMult);
+        }
+        completed = true;
+    }
+}
+
+void CubeManager::getSavedPositionsCWCurrent(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis)
+{
+    for (int i = 0; i < width - 1; i++)
+    {
+        glm::ivec2 swapPosition = s_SwapIndices.at(i);
+
+        glm::ivec3 index = getCurrentIndex(constant, axis, swapPosition);
+
+        QB* last = s_CurrentCubies[index.x][index.y][index.z];
+        stored.push_back(last);
+    }
+}
+
+void CubeManager::getSavedPositionsCCWCurrent(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis)
+{
+    for (int i = 0; i < width - 1; i++)
+    {
+        glm::ivec2 swapPosition = s_SwapIndices.at(s_SwapIndices.size() - 1 - (width - 2) + i);
+
+        glm::ivec3 index = getCurrentIndex(constant, axis, swapPosition);
+
+        QB* last = s_CurrentCubies[index.x][index.y][index.z];
         stored.push_back(last);
     }
 }

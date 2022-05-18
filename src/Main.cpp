@@ -22,8 +22,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void processKeys(KRE::Camera& camera);
 
-// TODO: Add two seperate arrays for CubeManager. One for animating, One for data
-
 int main()
 {
     GLFWwindow* window;
@@ -148,20 +146,22 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
         CubeManager::scramble("R2 L2 F2 B2 D2 U2");
+    if (key == GLFW_KEY_Z && action == GLFW_PRESS)
+        CubeManager::scramble("L F' U2 R' B2 L2 B' L' U F2 R2 L2 D R2 U L2 F2 B2 U' B2");
     if (key == GLFW_KEY_V && action == GLFW_PRESS)
         Solver::solve();
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::RIGHT, rotation });
+        CubeManager::doMove({ FaceEnum::RIGHT, rotation });
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::LEFT, rotation });
+        CubeManager::doMove({ FaceEnum::LEFT, rotation });
     if (key == GLFW_KEY_U && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::UP, rotation });
+        CubeManager::doMove({ FaceEnum::UP, rotation });
     if (key == GLFW_KEY_X && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::DOWN, rotation });
+        CubeManager::doMove({ FaceEnum::DOWN, rotation });
     if (key == GLFW_KEY_F && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::FRONT, rotation });
+        CubeManager::doMove({ FaceEnum::FRONT, rotation });
     if (key == GLFW_KEY_B && action == GLFW_PRESS)
-        CubeManager::addMove({ FaceEnum::BACK, rotation });
+        CubeManager::doMove({ FaceEnum::BACK, rotation });
 }
 
 void processKeys(KRE::Camera& camera)
