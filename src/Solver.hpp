@@ -24,6 +24,8 @@ private:
     static void solveCross();
 
     static std::vector<QB*> findQB(FaceEnum face, QBTypeEnum faceType);
+
+    static int convertFaceToInt(FaceEnum face);
 };
 
 #endif

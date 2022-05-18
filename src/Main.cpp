@@ -78,7 +78,7 @@ int main()
 
     CubeManager::generate(3, 3, 3);
     Move::seconds = 0.2f;
-    // CubeManager::scramble("L2 B2 U2 B' L2 F2 L2 D2 B' R2 B R2 D' F' U' R2 D2 L B R D2");
+    // CubeManager::scramble("D' R F2 U' L F' R F R U' F2 L2 U D2 R2 U' F2 R2 L2 U D B L' F2 U2 D2 B' L D' R L U2 L' B2 L F2 R B2 U2 L2");
     // CubeManager::scramble("U B D' F2 D B' U' R2 D F2 D' R2 D F2 D' R2");
     // CubeManager::scramble("U D' R L' F B' U D'");
 

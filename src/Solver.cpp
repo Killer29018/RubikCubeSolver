@@ -46,11 +46,55 @@ void Solver::solveCross()
         {
             if (facing == FaceEnum::UP) // Facing Correct Way
             {
-                continue;
+                if (otherFace != otherFacing) // Not correct position
+                {
+                    CubeManager::doMove({ otherFacing, RotationEnum::TWICE }); // Move to bottom face
+                }
+                else
+                {
+                    continue;
+                }
             }
+            else
+            {
+                // On top facing sideways
+                int currentInt = convertFaceToInt(facing);
+                int targetInt = convertFaceToInt(otherFace);
 
-            // On top facing sideways
-            assert(false && "Not implemented"); // TODO
+                if (currentInt == targetInt)
+                {
+                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
+                    CubeManager::doMove({ FaceEnum::UP, RotationEnum::PRIME });
+
+                    facing = current->getFacingSide(otherFace);
+                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
+
+                    CubeManager::doMove({ FaceEnum::UP, RotationEnum::NORMAL });
+                    continue;
+                }
+                else if ((currentInt + targetInt) % 2 == 0) // Opposite sides
+                {
+                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
+                    CubeManager::doMove({ FaceEnum::UP, RotationEnum::NORMAL });
+                    CubeManager::doMove({ current->getFacingSide(otherFace), RotationEnum::NORMAL });
+                    CubeManager::doMove({ FaceEnum::UP, RotationEnum::PRIME });
+                    continue;
+                }
+                else // Next to
+                {
+                    if (targetInt - currentInt == 1) // Right
+                    {
+                        CubeManager::doMove({ facing, RotationEnum::NORMAL });
+                        CubeManager::doMove({ current->getFacingSide(otherFace), RotationEnum::NORMAL });
+                    }
+                    else if (targetInt - currentInt == -1) // Left
+                    {
+                        CubeManager::doMove({ facing, RotationEnum::PRIME });
+                        CubeManager::doMove({ current->getFacingSide(otherFace), RotationEnum::PRIME });
+                    }
+                    continue;
+                }
+            }
         }
         else if (pos.y != 0) // Middle Row
         {
@@ -79,34 +123,34 @@ void Solver::solveCross()
             {
                 case LocalEdgeEnum::LEFT:
                     CubeManager::doMove({ otherFacing, RotationEnum::PRIME });
+                    CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                    CubeManager::doMove({ otherFacing, RotationEnum::NORMAL });
                     break;
                 case LocalEdgeEnum::RIGHT:
                     CubeManager::doMove({ otherFacing, RotationEnum::NORMAL });
+                    CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                    CubeManager::doMove({ otherFacing, RotationEnum::PRIME });
                     break;
                 default:
                     assert(false && "Unreachable. qb shouldn't be in top or bottom position");
             }
         }
 
-        // QB is on bottom face
-        if (otherFace == otherFacing) // Correct side
+        // QB is on bottom side
+        facing = current->getFacingSide(face);
+        otherFacing = current->getFacingSide(otherFace);
+        if (otherFace == otherFacing) // Correct side, Correctly facing due to recalculating facing direction
         {
-            if (facing == FaceEnum::DOWN) // Facing Down
-            {
-                CubeManager::doMove({ otherFacing, RotationEnum::TWICE });
-                continue;
-            }
-
-            // Facing Sideways
-            assert(false && "Not Implemented"); // TODO
+            CubeManager::doMove({ otherFacing, RotationEnum::TWICE });
+            continue;
         }
-        else // Wrong Side
+        else // Wrong Side or wrong direction
         {
+            int currentInt = convertFaceToInt(otherFacing);
+            int targetInt = convertFaceToInt(otherFace);
+
             if (facing == FaceEnum::DOWN) // Facing Down
             {
-                int currentInt = (int)std::log2(static_cast<int>(otherFacing));
-                int targetInt = (int)std::log2(static_cast<int>(otherFace));
-
                 int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
 
                 RotationEnum rotation = static_cast<RotationEnum>(change);
@@ -117,7 +161,28 @@ void Solver::solveCross()
             }
 
             // Facing Sideways
-            assert(false && "Not implemented solving on bottom face wrong direction"); // TODO
+            currentInt = convertFaceToInt(facing);
+            if ((currentInt + targetInt) % 2 == 0) // Opposite Sides or same
+            {
+                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+
+                currentInt = positiveMod(currentInt + 1, 4);
+                facing = static_cast<FaceEnum>(std::pow(2, currentInt));
+            }
+
+            int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+            if (change == 1) // Turn CCW, Right of target
+            {
+                CubeManager::doMove({ facing, RotationEnum::PRIME });
+                CubeManager::doMove({ otherFace, RotationEnum::NORMAL });
+                CubeManager::doMove({ facing, RotationEnum::NORMAL });
+            }
+            else if (change == -1) // Turn CW, Left of target
+            {
+                CubeManager::doMove({ facing, RotationEnum::NORMAL });
+                CubeManager::doMove({ otherFace, RotationEnum::PRIME });
+                CubeManager::doMove({ facing, RotationEnum::PRIME });
+            }
         }
     }
 }
@@ -141,4 +206,9 @@ std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
     }
 
     return edges;
+}
+
+int Solver::convertFaceToInt(FaceEnum face)
+{
+    return (int)std::log2(static_cast<int>(face));
 }
