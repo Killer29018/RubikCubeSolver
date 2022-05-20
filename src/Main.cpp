@@ -78,9 +78,6 @@ int main()
 
     CubeManager::generate(3, 3, 3);
     Move::seconds = 0.2f;
-    // CubeManager::scramble("D' R F2 U' L F' R F R U' F2 L2 U D2 R2 U' F2 R2 L2 U D B L' F2 U2 D2 B' L D' R L U2 L' B2 L F2 R B2 U2 L2");
-    // CubeManager::scramble("U B D' F2 D B' U' R2 D F2 D' R2 D F2 D' R2");
-    // CubeManager::scramble("U D' R L' F B' U D'");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -145,7 +142,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         rotation = RotationEnum::PRIME;
 
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
-        CubeManager::scramble("R2 L2 F2 B2 D2 U2");
+        // CubeManager::scramble("R2 L2 F2 B2 D2 U2");
+        CubeManager::scramble("U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'");
     if (key == GLFW_KEY_Z && action == GLFW_PRESS)
         CubeManager::scramble("L F' U2 R' B2 L2 B' L' U F2 R2 L2 D R2 U L2 F2 B2 U' B2");
     if (key == GLFW_KEY_V && action == GLFW_PRESS)
