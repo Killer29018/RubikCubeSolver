@@ -269,6 +269,44 @@ LocalEdgeEnum CubeManager::getLocalEdge(glm::ivec3 pos, FaceEnum face)
     assert(false && "Not reachable");
 }
 
+LocalCornerEnum CubeManager::getLocalCorner(glm::ivec3 pos, FaceEnum face)
+{
+    glm::ivec2 localPos = getLocalPos(pos, face);
+
+    if (localPos.x == 0 && localPos.y == 0)
+        return LocalCornerEnum::BOTTOM_LEFT;
+
+    switch (face)
+    {
+    case FaceEnum::UP:
+    case FaceEnum::DOWN:
+        if (localPos.x == 0 && localPos.y == s_SizeZ - 1)
+            return LocalCornerEnum::TOP_LEFT;
+        else if (localPos.x == s_SizeX - 1 && localPos.y == 0)
+            return LocalCornerEnum::BOTTOM_RIGHT;
+        else
+            return LocalCornerEnum::TOP_RIGHT;
+
+    case FaceEnum::LEFT:
+    case FaceEnum::RIGHT:
+        if (localPos.x == 0 && localPos.y == s_SizeY - 1)
+            return LocalCornerEnum::TOP_LEFT;
+        else if (localPos.x == s_SizeZ - 1 && localPos.y == 0)
+            return LocalCornerEnum::BOTTOM_RIGHT;
+        else
+            return LocalCornerEnum::TOP_RIGHT;
+
+    case FaceEnum::FRONT:
+    case FaceEnum::BACK:
+        if (localPos.x == 0 && localPos.y == s_SizeY - 1)
+            return LocalCornerEnum::TOP_LEFT;
+        else if (localPos.x == s_SizeX - 1 && localPos.y == 0)
+            return LocalCornerEnum::BOTTOM_RIGHT;
+        else
+            return LocalCornerEnum::TOP_RIGHT;
+    }
+}
+
 glm::vec3 CubeManager::coordsToPosition(uint16_t x, uint16_t y, uint16_t z)
 {
     glm::vec3 returnVec(0.0f);

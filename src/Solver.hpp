@@ -22,10 +22,13 @@ public:
 private:
     Solver() {}
     static void solveCross();
+    static void solveCorners();
 
     static std::vector<QB*> findQB(FaceEnum face, QBTypeEnum faceType);
 
     static int convertFaceToInt(FaceEnum face);
+
+    static std::array<FaceEnum, 2> convertCornerToFaces(FaceEnum corner);
 };
 
 #endif

@@ -13,19 +13,19 @@ enum class RotationEnum
 
 enum class FaceEnum : uint8_t
 {
-    FRONT   = 1 << 0,
-    RIGHT   = 1 << 1,
-    BACK    = 1 << 2,
-    LEFT    = 1 << 3,
-    UP      = 1 << 4,
-    DOWN    = 1 << 5,
+    FRONT   = 1 << 0, // 1
+    RIGHT   = 1 << 1, // 2
+    BACK    = 1 << 2, // 4
+    LEFT    = 1 << 3, // 8
+    UP      = 1 << 4, // 16
+    DOWN    = 1 << 5, // 32
 };
 
 enum class QBTypeEnum : uint8_t
 {
-    CENTER = 1,
-    EDGE = 2,
-    CORNER = 3,
+    CENTER  = 1,
+    EDGE    = 2,
+    CORNER  = 3,
 };
 
 enum class LocalEdgeEnum : uint8_t
@@ -34,6 +34,14 @@ enum class LocalEdgeEnum : uint8_t
     TOP     = 1,
     RIGHT   = 2,
     BOTTOM  = 3,
+};
+
+enum class LocalCornerEnum : uint8_t
+{
+    TOP_LEFT      = 0,
+    TOP_RIGHT     = 1,
+    BOTTOM_RIGHT  = 2,
+    BOTTOM_LEFT   = 3,
 };
 
 namespace std

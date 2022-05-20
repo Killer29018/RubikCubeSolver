@@ -24,16 +24,18 @@ void Solver::loadCube(QB**** cubies, uint16_t sizeX, uint16_t sizeY, uint16_t si
 void Solver::solve()
 {
     solveCross();
+
+    solveCorners();
 }
 
 void Solver::solveCross()
 {
     FaceEnum face = FaceEnum::UP;
-    std::vector<QB*> whiteEdges = findQB(face, QBTypeEnum::EDGE);
+    std::vector<QB*> topEdges = findQB(face, QBTypeEnum::EDGE);
 
-    for (int i = 0; i < whiteEdges.size(); i++)
+    for (int i = 0; i < topEdges.size(); i++)
     {
-        QB* current = whiteEdges[i];
+        QB* current = topEdges[i];
         glm::ivec3 pos = current->index;
 
         FaceEnum faces = current->activeFaces;
@@ -50,18 +52,18 @@ void Solver::solveCross()
                 {
                     CubeManager::doMove({ otherFacing, RotationEnum::TWICE }); // Move to bottom face
                 }
-                else
+                else // Correct Position
                 {
                     continue;
                 }
             }
-            else
+            else // Facing Wrong way
             {
                 // On top facing sideways
                 int currentInt = convertFaceToInt(facing);
                 int targetInt = convertFaceToInt(otherFace);
 
-                if (currentInt == targetInt)
+                if (currentInt == targetInt) // Top face is looking at the right side
                 {
                     CubeManager::doMove({ facing, RotationEnum::NORMAL });
                     CubeManager::doMove({ FaceEnum::UP, RotationEnum::PRIME });
@@ -72,7 +74,7 @@ void Solver::solveCross()
                     CubeManager::doMove({ FaceEnum::UP, RotationEnum::NORMAL });
                     continue;
                 }
-                else if ((currentInt + targetInt) % 2 == 0) // Opposite sides
+                else if ((currentInt + targetInt) % 2 == 0) // Top face is looking at the opposite side
                 {
                     CubeManager::doMove({ facing, RotationEnum::NORMAL });
                     CubeManager::doMove({ FaceEnum::UP, RotationEnum::NORMAL });
@@ -80,7 +82,7 @@ void Solver::solveCross()
                     CubeManager::doMove({ FaceEnum::UP, RotationEnum::PRIME });
                     continue;
                 }
-                else // Next to
+                else // Top face is looking at adjacent side
                 {
                     if (targetInt - currentInt == 1) // Right
                     {
@@ -187,6 +189,102 @@ void Solver::solveCross()
     }
 }
 
+void Solver::solveCorners()
+{
+    FaceEnum face = FaceEnum::UP;
+
+    std::vector<QB*> topCorners = findQB(face, QBTypeEnum::CORNER);
+
+    for (int i = 0; i < topCorners.size(); i++)
+    {
+        QB* current = topCorners[i];
+        glm::ivec3 pos = current->index;
+
+        FaceEnum faces = current->activeFaces;
+
+        FaceEnum otherFaces = static_cast<FaceEnum>(static_cast<int>(faces) & ~static_cast<int>(face));
+        std::array<FaceEnum, 2> corners = convertCornerToFaces(otherFaces);
+
+        FaceEnum facing = current->getFacingSide(face);
+
+        FaceEnum cornerFacing[2];
+        cornerFacing[0] = current->getFacingSide(corners[0]);
+        cornerFacing[1] = current->getFacingSide(corners[1]);
+
+        if (pos.y == s_SizeY - 1) // Top Row
+        {
+            if (facing == FaceEnum::UP) // Facing correct way
+            {
+                if (cornerFacing[0] == corners[0] && cornerFacing[1] == corners[1])
+                {
+                    continue;
+                }
+                else // Facing Up but in wrong position
+                {
+                    LocalCornerEnum localCorner = CubeManager::getLocalCorner(pos, cornerFacing[0]);
+
+                    switch (localCorner)
+                    {
+                    case LocalCornerEnum::TOP_LEFT:
+                        CubeManager::doMove({ cornerFacing[0], RotationEnum::PRIME });
+                        CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+                        CubeManager::doMove({ cornerFacing[0], RotationEnum::NORMAL });
+                        break;
+                    case LocalCornerEnum::TOP_RIGHT:
+                        CubeManager::doMove({ cornerFacing[0], RotationEnum::NORMAL });
+                        CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                        CubeManager::doMove({ cornerFacing[0], RotationEnum::PRIME });
+                        break;
+
+                    default:
+                        assert(false && "Not possible");
+                    }
+
+                    // Corner is moved to bottom of cube with top face facing out
+                }
+            }
+            else
+            {
+                // Top is facing sideways at top of cube
+                LocalCornerEnum localCorner = CubeManager::getLocalCorner(pos, facing);
+
+                switch(localCorner)
+                {
+                case LocalCornerEnum::TOP_LEFT:
+                    CubeManager::doMove({ facing, RotationEnum::PRIME });
+                    CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
+                    break;
+                case LocalCornerEnum::TOP_RIGHT:
+                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
+                    CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                    CubeManager::doMove({ facing, RotationEnum::PRIME });
+                    break;
+
+                default:
+                    assert(false && "Not possible");
+                }
+
+                // Corner is moved to bottom of cube with top face facing out
+            }
+        }
+
+        // Corner is at bottom of cube
+        if (facing == FaceEnum::DOWN)
+        {
+            // Rotate Corner so its facing out
+
+            /* TODO
+             * Rotate piece so other faces aline with the correct face. Only one face needs to be checked for alignment
+             * Rotate piece once, Then allow fall through
+             *
+             * Below:
+             * Check otherface is aligned with correct face, Rotate into place
+             */
+        }
+    }
+}
+
 std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
 {
     std::vector<QB*> edges;
@@ -211,4 +309,39 @@ std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
 int Solver::convertFaceToInt(FaceEnum face)
 {
     return (int)std::log2(static_cast<int>(face));
+}
+
+std::array<FaceEnum, 2> Solver::convertCornerToFaces(FaceEnum corner)
+{
+    std::array<FaceEnum, 2> faces;
+    FaceEnum found = FaceEnum::UP;
+    if ((corner & FaceEnum::UP) == FaceEnum::UP)
+    {
+        found = FaceEnum::UP;
+    }
+    else if ((corner & FaceEnum::DOWN) == FaceEnum::DOWN)
+    {
+        found = FaceEnum::DOWN;
+    }
+    else if ((corner & FaceEnum::LEFT) == FaceEnum::LEFT)
+    {
+        found = FaceEnum::LEFT;
+    }
+    else if ((corner & FaceEnum::RIGHT) == FaceEnum::RIGHT)
+    {
+        found = FaceEnum::RIGHT;
+    }
+    else if ((corner & FaceEnum::FRONT) == FaceEnum::FRONT)
+    {
+        found = FaceEnum::FRONT;
+    }
+    else if ((corner & FaceEnum::BACK) == FaceEnum::BACK)
+    {
+        found = FaceEnum::BACK;
+    }
+
+    faces[0] = found;
+    faces[1] = static_cast<FaceEnum>(static_cast<int>(corner) & ~static_cast<int>(found));
+
+    return faces;
 }
