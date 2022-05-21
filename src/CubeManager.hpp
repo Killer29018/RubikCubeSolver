@@ -31,7 +31,7 @@ public:
     static void draw(KRE::Shader& shader);
     static void update(float dt);
 
-    static void scramble(std::string input);
+    static void applyMoves(std::string input);
 
     static void doMove(Move move);
 

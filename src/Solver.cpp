@@ -28,6 +28,8 @@ void Solver::solve()
     solveCorners();
 
     solveMiddleLayer();
+
+    solveBottomCross();
 }
 
 void Solver::solveCross()
@@ -409,6 +411,75 @@ void Solver::solveMiddleLayer()
     }
 }
 
+void Solver::solveBottomCross()
+{
+    std::vector<QB*> bottomEdges = findQB(FaceEnum::DOWN, QBTypeEnum::EDGE);
+
+    const std::string moves = "F L D L' D' F'";
+
+    int count = getCountFacing(FaceEnum::DOWN, QBTypeEnum::EDGE);
+    if (count == 4) // Already a cross
+        return;
+
+    if (count == 0) // Dot
+    {
+        // Applies "F R U R' U' F'" on bottom face
+        CubeManager::applyMoves(moves);
+    }
+
+    // Either L or Line
+    // TODO: Find if L or Line
+    // If L, Make sure its in the right place, Then run moves twice
+    // If Line, make sure horizontal then run moves once
+
+    std::array<QB*, 2> downEdges;
+    int index = 0;
+    for (int i = 0; i < bottomEdges.size(); i++)
+    {
+        QB* current = bottomEdges[i];
+        if (current->getFacingSide(FaceEnum::DOWN) == FaceEnum::DOWN)
+        {
+            downEdges[index++] = current;
+        }
+    }
+    LocalEdgeEnum localEdge1 = CubeManager::getLocalEdge(downEdges[0]->index, FaceEnum::DOWN);
+    LocalEdgeEnum localEdge2 = CubeManager::getLocalEdge(downEdges[1]->index, FaceEnum::DOWN);
+
+    if ((static_cast<int>(localEdge1) + static_cast<int>(localEdge2)) % 2 == 0) // Line
+    {
+        if (localEdge1 == LocalEdgeEnum::TOP || localEdge1 == LocalEdgeEnum::BOTTOM)
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+
+        // Line is now in the correct direction
+    }
+    else
+    {
+        if ((localEdge1 == LocalEdgeEnum::RIGHT && localEdge2 == LocalEdgeEnum::BOTTOM) ||
+            (localEdge1 == LocalEdgeEnum::BOTTOM && localEdge2 == LocalEdgeEnum::RIGHT ))
+        {
+            // L is in right place
+        }
+        else if (localEdge1 == LocalEdgeEnum::RIGHT || localEdge2 == LocalEdgeEnum::RIGHT)
+        {
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+        }
+        else if (localEdge1 == LocalEdgeEnum::BOTTOM || localEdge2 == LocalEdgeEnum::BOTTOM)
+        {
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+        }
+        else
+        {
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
+        }
+
+        CubeManager::applyMoves(moves);
+        // L has become a line in the correct orientation
+    }
+
+    // Line in correct orientation
+    CubeManager::applyMoves(moves);
+}
+
 void Solver::insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge)
 {
     int currentFaceInt = convertFaceToInt(currentFace);
@@ -489,6 +560,28 @@ std::vector<QB*> Solver::findNotQB(FaceEnum face, QBTypeEnum faceType)
     }
 
     return edges;
+}
+
+int Solver::getCountFacing(FaceEnum face, QBTypeEnum faceType)
+{
+    int count = 0;
+    for (int z = 0; z < s_SizeZ; z++)
+    {
+        for (int y = 0; y < s_SizeY; y++)
+        {
+            for (int x = 0; x < s_SizeX; x++)
+            {
+                if (s_Cubies[z][y][x]->hasFace(face) && s_Cubies[z][y][x]->getFaceCount() == static_cast<int>(faceType))
+                {
+                    if (s_Cubies[z][y][x]->getFacingSide(face) == face)
+                    {
+                        count++;
+                    }
+                }
+            }
+        }
+    }
+    return count;
 }
 
 int Solver::convertFaceToInt(FaceEnum face)

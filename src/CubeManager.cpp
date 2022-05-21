@@ -149,7 +149,7 @@ void CubeManager::update(float dt)
     rotate(dt);
 }
 
-void CubeManager::scramble(std::string input)
+void CubeManager::applyMoves(std::string input)
 {
     for (size_t i = 0; i <= input.size() - 1;)
     {

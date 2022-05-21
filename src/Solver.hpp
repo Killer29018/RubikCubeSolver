@@ -23,11 +23,13 @@ private:
     static void solveCross();
     static void solveCorners();
     static void solveMiddleLayer();
+    static void solveBottomCross();
 
     static void insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge);
 
     static std::vector<QB*> findQB(FaceEnum face, QBTypeEnum faceType);
     static std::vector<QB*> findNotQB(FaceEnum face, QBTypeEnum faceType);
+    static int getCountFacing(FaceEnum face, QBTypeEnum faceType);
 
     static int convertFaceToInt(FaceEnum face);
     static FaceEnum convertIntToFace(int faceInt);

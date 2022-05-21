@@ -77,7 +77,7 @@ int main()
     shader.setUniformMatrix4("u_Projection", projection);
 
     CubeManager::generate(3, 3, 3);
-    Move::seconds = 0.2f;
+    Move::seconds = 0.05f;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -142,15 +142,16 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         rotation = RotationEnum::PRIME;
 
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
-        // CubeManager::scramble("R2 L2 F2 B2 D2 U2");
-        // CubeManager::scramble("U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'");
-        // CubeManager::scramble("R2 B2 D2");
-        // CubeManager::scramble("U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'");
-        // CubeManager::scramble("R2 B2 D2");
-        // CubeManager::scramble("R' D' R D L D L' D'");
-        CubeManager::scramble("D L D' L' D' F' D F");
+        // CubeManager::applyMoves("R2 L2 F2 B2 D2 U2");
+        // CubeManager::applyMoves("U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'");
+        // CubeManager::applyMoves("R2 B2 D2");
+        // CubeManager::applyMoves("U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'");
+        // CubeManager::applyMoves("R2 B2 D2");
+        // CubeManager::applyMoves("R' D' R D L D L' D'");
+        // CubeManager::applyMoves("D L D' L' D' F' D F");
+        CubeManager::applyMoves("F L D L' D' F'");
     if (key == GLFW_KEY_Z && action == GLFW_PRESS)
-        CubeManager::scramble("L F' U2 R' B2 L2 B' L' U F2 R2 L2 D R2 U L2 F2 B2 U' B2");
+        CubeManager::applyMoves("L F' U2 R' B2 L2 B' L' U F2 R2 L2 D R2 U L2 F2 B2 U' B2");
     if (key == GLFW_KEY_V && action == GLFW_PRESS)
         Solver::solve();
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
