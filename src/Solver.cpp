@@ -26,6 +26,8 @@ void Solver::solve()
     solveCross();
 
     solveCorners();
+
+    solveMiddleLayer();
 }
 
 void Solver::solveCross()
@@ -169,7 +171,7 @@ void Solver::solveCross()
                 CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
 
                 currentInt = positiveMod(currentInt + 1, 4); // Rotate Clockwise
-                facing = static_cast<FaceEnum>(std::pow(2, currentInt));
+                facing = convertIntToFace(currentInt);
             }
 
             int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
@@ -204,7 +206,7 @@ void Solver::solveCorners()
         FaceEnum faces = current->activeFaces;
 
         FaceEnum otherFaces = static_cast<FaceEnum>(static_cast<int>(faces) & ~static_cast<int>(face));
-        std::array<FaceEnum, 2> corners = convertCornerToFaces(otherFaces);
+        std::array<FaceEnum, 2> corners = convertDualFaceToFaces(otherFaces);
 
         FaceEnum facing = current->getFacingSide(face);
 
@@ -274,12 +276,6 @@ void Solver::solveCorners()
         if (facing == FaceEnum::DOWN)
         {
             // Rotate Corner so its facing out
-
-            /* TODO
-             * Rotate piece so other faces aline with the correct face. Only one face needs to be checked for alignment
-             * Rotate piece once, Then allow fall through
-             *
-             */
             FaceEnum chosen = corners[0];
             FaceEnum chosenFacing = current->getFacingSide(chosen);
 
@@ -345,6 +341,114 @@ void Solver::solveCorners()
     }
 }
 
+void Solver::solveMiddleLayer()
+{
+    FaceEnum bottomFace = FaceEnum::DOWN;
+
+    std::vector<QB*> nonBottomEdges = findNotQB(bottomFace, QBTypeEnum::EDGE);
+
+    for (int i = 0; i < nonBottomEdges.size(); i++)
+    {
+        QB* current = nonBottomEdges[i];
+        glm::ivec3 pos = current->index;
+
+        if (current->hasFace(FaceEnum::UP)) // Already solved
+            continue;
+
+        // std::cout << "Non Top: " << current->index.x << " : " << current->index.y << " : " << current->index.z << "\n";
+
+        std::array<FaceEnum, 2> faces = convertDualFaceToFaces(current->activeFaces);
+
+        FaceEnum facing[2];
+        facing[0] = current->getFacingSide(faces[0]);
+        facing[1] = current->getFacingSide(faces[1]);
+
+        if (pos.y != 0) // In the middle
+        {
+            if (facing[0] == faces[0] && facing[1] == faces[1]) // Correctly positioned
+            {
+                continue;
+            }
+
+            // Either in the correct slot facing wrong, or in the wrong slot
+            // Move out of slot
+
+            LocalEdgeEnum localEdge = CubeManager::getLocalEdge(pos, facing[0]);
+
+            insertEdge(facing[0], localEdge);
+        }
+
+        // Piece is at bottom of cube
+        FaceEnum chosenFace = faces[0];
+
+        if (current->getFacingSide(chosenFace) == FaceEnum::DOWN)
+        {
+            chosenFace = faces[1];
+        }
+        FaceEnum chosenFacing = current->getFacingSide(chosenFace);
+
+        if (chosenFacing != chosenFace) // Rotate into place
+        {
+            int currentInt = convertFaceToInt(chosenFacing);
+            int targetInt = convertFaceToInt(chosenFace);
+
+            int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+            RotationEnum rotation = static_cast<RotationEnum>(change);
+
+            CubeManager::doMove({ FaceEnum::DOWN, rotation });
+        }
+
+        // Piece is above where it needs to be
+        int currentInt = convertFaceToInt(chosenFace);
+        FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(current->activeFaces) & ~(static_cast<int>(chosenFace)));
+        int targetInt = convertFaceToInt(otherFace);
+        int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+        LocalEdgeEnum localEdge = static_cast<LocalEdgeEnum>(change + 1);
+
+        insertEdge(chosenFace, localEdge);
+    }
+}
+
+void Solver::insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge)
+{
+    int currentFaceInt = convertFaceToInt(currentFace);
+    switch (targetEdge)
+    {
+    case LocalEdgeEnum::LEFT:
+        {
+            FaceEnum leftFace = convertIntToFace(positiveMod(currentFaceInt - 1, 4));
+
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            CubeManager::doMove({ leftFace, RotationEnum::NORMAL });
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            CubeManager::doMove({ leftFace, RotationEnum::PRIME});
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            CubeManager::doMove({ currentFace, RotationEnum::PRIME });
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            CubeManager::doMove({ currentFace, RotationEnum::NORMAL });
+
+            break;
+        }
+    case LocalEdgeEnum::RIGHT:
+        {
+            FaceEnum rightFace = convertIntToFace(positiveMod(currentFaceInt + 1, 4));
+
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            CubeManager::doMove({ rightFace, RotationEnum::PRIME });
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            CubeManager::doMove({ rightFace, RotationEnum::NORMAL});
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            CubeManager::doMove({ currentFace, RotationEnum::NORMAL });
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            CubeManager::doMove({ currentFace, RotationEnum::PRIME });
+            break;
+        }
+
+    default:
+        assert(false && "Not posssible");
+    }
+}
+
 std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
 {
     std::vector<QB*> edges;
@@ -366,12 +470,38 @@ std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
     return edges;
 }
 
+std::vector<QB*> Solver::findNotQB(FaceEnum face, QBTypeEnum faceType)
+{
+    std::vector<QB*> edges;
+    for (int z = 0; z < s_SizeZ; z++)
+    {
+        for (int y = 0; y < s_SizeY; y++)
+        {
+            for (int x = 0; x < s_SizeX; x++)
+            {
+                size_t count = s_Cubies[z][y][x]->getFaceCount();
+                if (count == static_cast<int>(faceType) && !s_Cubies[z][y][x]->hasFace(face))
+                {
+                    edges.push_back(s_Cubies[z][y][x]);
+                }
+            }
+        }
+    }
+
+    return edges;
+}
+
 int Solver::convertFaceToInt(FaceEnum face)
 {
     return (int)std::log2(static_cast<int>(face));
 }
 
-std::array<FaceEnum, 2> Solver::convertCornerToFaces(FaceEnum corner)
+FaceEnum Solver::convertIntToFace(int faceInt)
+{
+    return static_cast<FaceEnum>(std::pow(2, faceInt));
+}
+
+std::array<FaceEnum, 2> Solver::convertDualFaceToFaces(FaceEnum corner)
 {
     std::array<FaceEnum, 2> faces;
     FaceEnum found = FaceEnum::UP;
