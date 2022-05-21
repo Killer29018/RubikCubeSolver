@@ -168,18 +168,19 @@ void Solver::solveCross()
             {
                 CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
 
-                currentInt = positiveMod(currentInt + 1, 4);
+                currentInt = positiveMod(currentInt + 1, 4); // Rotate Clockwise
                 facing = static_cast<FaceEnum>(std::pow(2, currentInt));
             }
 
             int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
-            if (change == 1) // Turn CCW, Right of target
+            RotationEnum rotation = static_cast<RotationEnum>(change);
+            if (rotation == RotationEnum::NORMAL) // Turn CW, Right of target
             {
                 CubeManager::doMove({ facing, RotationEnum::PRIME });
                 CubeManager::doMove({ otherFace, RotationEnum::NORMAL });
                 CubeManager::doMove({ facing, RotationEnum::NORMAL });
             }
-            else if (change == -1) // Turn CW, Left of target
+            else if (rotation == RotationEnum::PRIME) // Turn CCW, Left of target
             {
                 CubeManager::doMove({ facing, RotationEnum::NORMAL });
                 CubeManager::doMove({ otherFace, RotationEnum::PRIME });
@@ -278,9 +279,68 @@ void Solver::solveCorners()
              * Rotate piece so other faces aline with the correct face. Only one face needs to be checked for alignment
              * Rotate piece once, Then allow fall through
              *
-             * Below:
-             * Check otherface is aligned with correct face, Rotate into place
              */
+            FaceEnum chosen = corners[0];
+            FaceEnum chosenFacing = current->getFacingSide(chosen);
+
+            FaceEnum target = corners[1];
+
+            int currentInt = convertFaceToInt(chosenFacing);
+            int targetInt = convertFaceToInt(target);
+
+            int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+            RotationEnum rotation = static_cast<RotationEnum>(change);
+
+            CubeManager::doMove({ FaceEnum::DOWN, rotation });
+
+            CubeManager::doMove({ chosen, RotationEnum::PRIME });
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
+            CubeManager::doMove({ chosen, RotationEnum::NORMAL });
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+        }
+
+        // Corner has top face and another face facing outwards
+        
+        // Align the face that is facing out with the correct face
+        FaceEnum chosen = corners[0];
+        FaceEnum chosenFacing = current->getFacingSide(chosen);
+        if (current->getFacingSide(chosen) == FaceEnum::DOWN)
+        {
+            chosen = corners[1];
+            chosenFacing = current->getFacingSide(chosen);
+        }
+
+        if (chosenFacing != chosen)
+        {
+            int currentInt = convertFaceToInt(chosenFacing);
+            int targetInt = convertFaceToInt(chosen);
+
+            int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+            RotationEnum rotation = static_cast<RotationEnum>(change);
+            CubeManager::doMove({ FaceEnum::DOWN, rotation });
+            chosenFacing = current->getFacingSide(chosen);
+        }
+
+        facing = current->getFacingSide(face);
+
+        // Corner has top facing out, and the other side aligned
+        LocalCornerEnum localCorner = CubeManager::getLocalCorner(current->index, chosenFacing);
+
+        switch (localCorner)
+        {
+        case LocalCornerEnum::BOTTOM_RIGHT:
+            CubeManager::doMove({ facing, RotationEnum::PRIME });
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            CubeManager::doMove({ facing, RotationEnum::NORMAL });
+            break;
+        case LocalCornerEnum::BOTTOM_LEFT:
+            CubeManager::doMove({ facing, RotationEnum::NORMAL });
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            CubeManager::doMove({ facing, RotationEnum::PRIME });
+            break;
+
+        default:
+            assert(false && "Not possible");
         }
     }
 }

@@ -144,7 +144,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
         // CubeManager::scramble("R2 L2 F2 B2 D2 U2");
         // CubeManager::scramble("U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'");
-        CubeManager::scramble("R2 B2 D2");
+        // CubeManager::scramble("R2 B2 D2");
+        // CubeManager::scramble("U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'");
+        // CubeManager::scramble("R2 B2 D2");
+        CubeManager::scramble("R' D' R D L D L' D'");
     if (key == GLFW_KEY_Z && action == GLFW_PRESS)
         CubeManager::scramble("L F' U2 R' B2 L2 B' L' U F2 R2 L2 D R2 U L2 F2 B2 U' B2");
     if (key == GLFW_KEY_V && action == GLFW_PRESS)
