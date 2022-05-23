@@ -24,6 +24,7 @@ private:
     static void solveCorners();
     static void solveMiddleLayer();
     static void solveBottomCross();
+    static void alignBottomCross();
 
     static void insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge);
 
