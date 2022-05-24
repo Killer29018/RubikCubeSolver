@@ -32,6 +32,10 @@ void Solver::solve()
     solveBottomCross();
 
     alignBottomCross();
+
+    positionBottomCorners();
+
+    reorientateBottomCorners();
 }
 
 void Solver::solveCross()
@@ -293,10 +297,23 @@ void Solver::solveCorners()
 
             CubeManager::doMove({ FaceEnum::DOWN, rotation });
 
-            CubeManager::doMove({ target, RotationEnum::PRIME });
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
-            CubeManager::doMove({ target, RotationEnum::NORMAL });
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            LocalCornerEnum localCorner = CubeManager::getLocalCorner(current->index, target);
+
+            switch (localCorner)
+            {
+            case LocalCornerEnum::BOTTOM_LEFT:
+                CubeManager::doMove({ target, RotationEnum::PRIME });
+                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
+                CubeManager::doMove({ target, RotationEnum::NORMAL });
+                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                break;
+            case LocalCornerEnum::BOTTOM_RIGHT:
+                CubeManager::doMove({ target, RotationEnum::NORMAL });
+                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
+                CubeManager::doMove({ target, RotationEnum::PRIME });
+                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+                break;
+            }
         }
 
         // Corner has top face and another face facing outwards
@@ -604,6 +621,106 @@ void Solver::alignBottomCross()
     }
 }
 
+void Solver::positionBottomCorners()
+{
+    FaceEnum face = FaceEnum::DOWN;
+    std::vector<QB*> bottomCorners = findQB(face, QBTypeEnum::CORNER);
+
+    // U R U' L' U R' U' L
+    // D' L' D R D' L D R' ** Cycles all but back left corner **
+    const std::string moves = "D' L' D R D' L D R'";
+
+    bool finished = true;
+    do
+    {
+        finished = true;
+        std::vector<QB*> wrongCorners;
+        QB* correctCorner = nullptr; // There can only be all corners, one corner or no corners in the correct position
+        for (int i = 0; i < bottomCorners.size(); i++)
+        {
+            QB* current = bottomCorners[i];
+            bool correctPosition = cornerInCorrectPosition(current);
+            finished = finished && correctPosition;
+
+            if (!correctPosition)
+                wrongCorners.push_back(current);
+            else
+                correctCorner = current;
+        }
+
+        if (finished)
+            continue;
+
+        if (wrongCorners.size() == 4) // All Corners are wrong
+        {
+            CubeManager::applyMoves(moves);
+            continue;
+        }
+
+        if (wrongCorners.size() == 3 && correctCorner) // Only One corner is correct
+        {
+            LocalCornerEnum currentCorner = CubeManager::getLocalCorner(correctCorner->index, face);
+            LocalCornerEnum targetCorner = LocalCornerEnum::BOTTOM_LEFT;
+
+            int currentInt = static_cast<int>(currentCorner);
+            int targetInt = static_cast<int>(targetCorner);
+
+            int rotationInt = positiveMod(targetInt - currentInt - 1, 4) + 1;
+            
+            RotationEnum rotation = static_cast<RotationEnum>(rotationInt);
+
+            // Put correct piece into position where it is not affected
+            CubeManager::doMove({ FaceEnum::DOWN, rotation });
+            CubeManager::applyMoves(moves);
+
+            rotationInt = positiveMod(currentInt - targetInt - 1, 4) + 1;
+            rotation = static_cast<RotationEnum>(rotationInt);
+
+            // Align bottom center again
+            CubeManager::doMove({ FaceEnum::DOWN, rotation }); // Undo bottom face rotation
+        }
+    }
+    while (!finished);
+}
+
+void Solver::reorientateBottomCorners()
+{
+    FaceEnum face = FaceEnum::DOWN;
+    std::vector<QB*> bottomCorners = findQB(face, QBTypeEnum::CORNER);
+
+    // (R' D' R D)2 on bottom face
+    // (R U R' U')2
+    const std::string moves = "R U R' U' R U R' U'";
+
+    for (int i = 0; i < bottomCorners.size(); i++)
+    {
+        QB* current = s_Cubies[s_SizeZ - 1][0][s_SizeX - 1];
+
+        while (current->getFacingSide(face) != face)
+            CubeManager::applyMoves(moves);
+
+        CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+    }
+
+    std::vector<QB*> bottomEdges = findQB(face, QBTypeEnum::EDGE);
+
+    QB* chosen = bottomEdges[0];
+
+    FaceEnum chosenFace = static_cast<FaceEnum>(static_cast<int>(chosen->activeFaces) & ~static_cast<int>(face));
+    FaceEnum facing = chosen->getFacingSide(chosenFace);
+
+    if (facing != chosenFace)
+    {
+        int currentInt = convertFaceToInt(facing);
+        int targetInt = convertFaceToInt(chosenFace);
+
+        int rotationInt = positiveMod(targetInt - currentInt - 1, 4) + 1;
+        RotationEnum rotation = static_cast<RotationEnum>(rotationInt);
+
+        CubeManager::doMove({ face, rotation });
+    }
+}
+
 void Solver::insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge)
 {
     int currentFaceInt = convertFaceToInt(currentFace);
@@ -716,6 +833,42 @@ int Solver::convertFaceToInt(FaceEnum face)
 FaceEnum Solver::convertIntToFace(int faceInt)
 {
     return static_cast<FaceEnum>(std::pow(2, faceInt));
+}
+
+bool Solver::cornerInCorrectPosition(QB* corner)
+{
+    glm::ivec3 pos = corner->index;
+
+    glm::ivec3 correctPosition(0);
+
+    if ((corner->activeFaces & FaceEnum::UP) == FaceEnum::UP)
+    {
+        correctPosition.y = s_SizeY - 1;
+    }
+    else if ((corner->activeFaces & FaceEnum::DOWN) == FaceEnum::DOWN)
+    {
+        correctPosition.y = 0;
+    }
+
+    if ((corner->activeFaces & FaceEnum::LEFT) == FaceEnum::LEFT)
+    {
+        correctPosition.x = 0;
+    }
+    else if ((corner->activeFaces & FaceEnum::RIGHT) == FaceEnum::RIGHT)
+    {
+        correctPosition.x = s_SizeX - 1;
+    }
+
+    if ((corner->activeFaces & FaceEnum::FRONT) == FaceEnum::FRONT)
+    {
+        correctPosition.z = s_SizeZ - 1;
+    }
+    else if ((corner->activeFaces & FaceEnum::BACK) == FaceEnum::BACK)
+    {
+        correctPosition.z = 0;
+    }
+
+    return (correctPosition == pos);
 }
 
 std::array<FaceEnum, 2> Solver::convertDualFaceToFaces(FaceEnum corner)

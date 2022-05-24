@@ -78,6 +78,7 @@ int main()
 
     CubeManager::generate(3, 3, 3);
     Move::seconds = 0.05f;
+    // Move::seconds = 1.00f;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -152,7 +153,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         CubeManager::applyMoves("L' D' L D' L' D2 L D' D2 L' D' L D' L' D2 L D'");
     if (key == GLFW_KEY_Z && action == GLFW_PRESS)
         // CubeManager::applyMoves("L F' U2 R' B2 L2 B' L' U F2 R2 L2 D R2 U L2 F2 B2 U' B2");
-        CubeManager::applyMoves("R2 B D2 F L2 F2 D2 F2 U2 R2 D2 R' D' U2 L B' R2 B' R' D2");
+        // CubeManager::applyMoves("R2 B D2 F L2 F2 D2 F2 U2 R2 D2 R' D' U2 L B' R2 B' R' D2");
+        CubeManager::applyMoves("R' U2 B L' F U' B D F U D' L D2 F' R B' D F' U' B' U D'");
     if (key == GLFW_KEY_V && action == GLFW_PRESS)
         Solver::solve();
     if (key == GLFW_KEY_R && action == GLFW_PRESS)

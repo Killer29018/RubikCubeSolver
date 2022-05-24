@@ -25,6 +25,8 @@ private:
     static void solveMiddleLayer();
     static void solveBottomCross();
     static void alignBottomCross();
+    static void positionBottomCorners();
+    static void reorientateBottomCorners();
 
     static void insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge);
 
@@ -34,6 +36,8 @@ private:
 
     static int convertFaceToInt(FaceEnum face);
     static FaceEnum convertIntToFace(int faceInt);
+
+    static bool cornerInCorrectPosition(QB* corner);
 
     static std::array<FaceEnum, 2> convertDualFaceToFaces(FaceEnum faces);
 };
