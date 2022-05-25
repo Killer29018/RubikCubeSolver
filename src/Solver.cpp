@@ -163,9 +163,11 @@ void Solver::solveCross()
 
             if (facing == FaceEnum::DOWN) // Facing Down
             {
-                int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+                // int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
 
-                RotationEnum rotation = static_cast<RotationEnum>(change);
+                // RotationEnum rotation = static_cast<RotationEnum>(change);
+
+                RotationEnum rotation = getRotationToTarget(otherFacing, otherFace);
 
                 CubeManager::doMove({ FaceEnum::DOWN, rotation });
                 CubeManager::doMove({ otherFace, RotationEnum::TWICE });
@@ -178,12 +180,14 @@ void Solver::solveCross()
             {
                 CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
 
-                currentInt = positiveMod(currentInt + 1, 4); // Rotate Clockwise
+                currentInt = convertFaceToInt(facing); // Rotate Clockwise
                 facing = convertIntToFace(currentInt);
             }
 
-            int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
-            RotationEnum rotation = static_cast<RotationEnum>(change);
+            // int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+            // RotationEnum rotation = static_cast<RotationEnum>(change);
+
+            RotationEnum rotation = getRotationToTarget(currentInt, targetInt);
             if (rotation == RotationEnum::NORMAL) // Turn CW, Right of target
             {
                 CubeManager::doMove({ facing, RotationEnum::PRIME });
@@ -289,11 +293,12 @@ void Solver::solveCorners()
 
             FaceEnum target = corners[1];
 
-            int currentInt = convertFaceToInt(chosenFacing);
-            int targetInt = convertFaceToInt(target);
+            // int currentInt = convertFaceToInt(chosenFacing);
+            // int targetInt = convertFaceToInt(target);
 
-            int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
-            RotationEnum rotation = static_cast<RotationEnum>(change);
+            // int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+            // RotationEnum rotation = static_cast<RotationEnum>(change);
+            RotationEnum rotation = getRotationToTarget(chosenFacing, target);
 
             CubeManager::doMove({ FaceEnum::DOWN, rotation });
 
@@ -329,11 +334,12 @@ void Solver::solveCorners()
 
         if (chosenFacing != chosen)
         {
-            int currentInt = convertFaceToInt(chosenFacing);
-            int targetInt = convertFaceToInt(chosen);
+            // int currentInt = convertFaceToInt(chosenFacing);
+            // int targetInt = convertFaceToInt(chosen);
 
-            int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
-            RotationEnum rotation = static_cast<RotationEnum>(change);
+            // int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+            // RotationEnum rotation = static_cast<RotationEnum>(change);
+            RotationEnum rotation = getRotationToTarget(chosenFacing, chosen);
             CubeManager::doMove({ FaceEnum::DOWN, rotation });
             chosenFacing = current->getFacingSide(chosen);
         }
@@ -408,21 +414,27 @@ void Solver::solveMiddleLayer()
 
         if (chosenFacing != chosenFace) // Rotate into place
         {
-            int currentInt = convertFaceToInt(chosenFacing);
-            int targetInt = convertFaceToInt(chosenFace);
+            // int currentInt = convertFaceToInt(chosenFacing);
+            // int targetInt = convertFaceToInt(chosenFace);
 
-            int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
-            RotationEnum rotation = static_cast<RotationEnum>(change);
+            // int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
+            // RotationEnum rotation = static_cast<RotationEnum>(change);
+            RotationEnum rotation = getRotationToTarget(chosenFacing, chosenFace);
 
             CubeManager::doMove({ FaceEnum::DOWN, rotation });
         }
 
         // Piece is above where it needs to be
-        int currentInt = convertFaceToInt(chosenFace);
+        // int currentInt = convertFaceToInt(chosenFace);
         FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(current->activeFaces) & ~(static_cast<int>(chosenFace)));
-        int targetInt = convertFaceToInt(otherFace);
-        int change = positiveMod(targetInt - currentInt + 1, 4) - 1;
-        LocalEdgeEnum localEdge = static_cast<LocalEdgeEnum>(change + 1);
+        // int targetInt = convertFaceToInt(otherFace);
+
+        // int change = positiveMod(targetInt - currentInt + 1, 4) - 1; // Either -1 or 1
+
+        RotationEnum rotation = getRotationToTarget(chosenFace, otherFace); // Either PRIME or NORMAL
+        // Go from PRIME, NORMAL to LEFT, RIGHT
+        // Rotation Prime means the target face is on the left edge, Whereas Normal means the target is on the right
+        LocalEdgeEnum localEdge = static_cast<LocalEdgeEnum>(static_cast<int>(rotation) + 1); 
 
         insertEdge(chosenFace, localEdge);
     }
@@ -473,7 +485,7 @@ void Solver::solveBottomCross()
         }
         else if (localEdge1 == LocalEdgeEnum::RIGHT || localEdge2 == LocalEdgeEnum::RIGHT)
         {
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
         }
         else if (localEdge1 == LocalEdgeEnum::BOTTOM || localEdge2 == LocalEdgeEnum::BOTTOM)
         {
@@ -497,7 +509,11 @@ void Solver::alignBottomCross()
     FaceEnum face = FaceEnum::DOWN;
     std::vector<QB*> bottomEdges = findQB(face, QBTypeEnum::EDGE);
 
-    std::unordered_map<int, int> change = { { -1, 0 }, { 0, 0 }, {1, 0}, { 2, 0 } }; // Setup possible changes
+    std::unordered_map<RotationEnum, int> change = { 
+        { RotationEnum::PRIME,  0 },
+        { RotationEnum::NONE,   0 },
+        { RotationEnum::NORMAL, 0 },
+        { RotationEnum::TWICE,  0 } }; // Setup possible changes
 
     // Calculate the difference between each face and where the face wants to go
     for (int i = 0; i < bottomEdges.size(); i++)
@@ -507,30 +523,30 @@ void Solver::alignBottomCross()
         FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(current->activeFaces) & ~static_cast<int>(face));
         FaceEnum otherFacing = current->getFacingSide(otherFace);
 
-        int currentInt = convertFaceToInt(otherFacing);
-        int targetInt = convertFaceToInt(otherFace);
-        int changeValue = positiveMod(targetInt - currentInt + 1, 4) - 1;
-        change[changeValue] += 1;
+        // int currentInt = convertFaceToInt(otherFacing);
+        // int targetInt = convertFaceToInt(otherFace);
+        // int changeValue = positiveMod(targetInt - currentInt + 1, 4) - 1;
+        RotationEnum rotation = getRotationToTarget(otherFacing, otherFace);
+        change[rotation] += 1; // 
     }
 
-    int currentChange = -1;
+    RotationEnum currentRotation = RotationEnum::NONE;
     int count = -1;
     for (auto& pair : change)
     {
         if (pair.second > count)
         {
             count = pair.second;
-            currentChange = pair.first;
+            currentRotation = pair.first;
         }
     }
 
-    if (currentChange == 0 && count == 4) // All pieces are already correct
+    if (currentRotation == RotationEnum::NONE && count == 4) // All pieces are already correct
     {
         return;
     }
 
-    RotationEnum rotation = static_cast<RotationEnum>(currentChange);
-    CubeManager::doMove({ face, rotation });
+    CubeManager::doMove({ face, currentRotation });
 
     // Cross is now aligned to so the most faces are correct
 
@@ -551,31 +567,39 @@ void Solver::alignBottomCross()
         }
     }
 
+    // There can only ever be either only 2 wrong
+    // They are either next to eachother or opposite
     FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(wrongPositions[0]->activeFaces) & ~static_cast<int>(face));
     FaceEnum facing0 = wrongPositions[0]->getFacingSide(otherFace);
 
     otherFace = static_cast<FaceEnum>(static_cast<int>(wrongPositions[1]->activeFaces) & ~static_cast<int>(face));
     FaceEnum facing1 = wrongPositions[1]->getFacingSide(otherFace);
 
-    int currentInt = convertFaceToInt(facing0);
-    int targetInt = convertFaceToInt(facing1);
-    int difference = positiveMod(targetInt - currentInt + 1, 4) - 1; // Rotation from 0 to 2
+    // int currentInt = convertFaceToInt(facing0);
+    // int targetInt = convertFaceToInt(facing1);
+    // int difference = positiveMod(targetInt - currentInt + 1, 4) - 1; // Rotation from 0 to 2
 
-    if (difference == 2)
+    // Get the difference between the two chosen wrong faces
+    RotationEnum rotation = getRotationToTarget(facing0, facing1); // Either PRIME, NORMAL or TWICE
+
+    if (rotation == RotationEnum::TWICE)
     {
         // Faces are opposite eachother
         CubeManager::applyMoves(moves);
         CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
         CubeManager::applyMoves(moves);
 
+        // currentInt = convertFaceToInt(chosenFacing);
+        // targetInt = convertFaceToInt(chosenFace);
+
+        // difference = positiveMod(targetInt - currentInt + 1, 4) - 1;
+        // RotationEnum rotation = static_cast<RotationEnum>(difference);
+
+        // Reorientate cross so it is correct
         FaceEnum chosenFace = static_cast<FaceEnum>(static_cast<int>(wrongPositions[0]->activeFaces) & ~static_cast<int>(face));
         FaceEnum chosenFacing = wrongPositions[0]->getFacingSide(chosenFace);
 
-        currentInt = convertFaceToInt(chosenFacing);
-        targetInt = convertFaceToInt(chosenFace);
-
-        difference = positiveMod(targetInt - currentInt + 1, 4) - 1;
-        RotationEnum rotation = static_cast<RotationEnum>(difference);
+        rotation = getRotationToTarget(chosenFacing, chosenFace);
         CubeManager::doMove({ FaceEnum::DOWN, rotation });
 
         return;
@@ -586,7 +610,8 @@ void Solver::alignBottomCross()
 
     FaceEnum leftFace, rightFace, leftFacing, rightFacing;
 
-    if (difference == 1)
+    // The "left" piece is CW of the "right" so swap them
+    if (rotation == RotationEnum::NORMAL)
     {
         left = wrongPositions[1];
         right = wrongPositions[0];
@@ -607,13 +632,17 @@ void Solver::alignBottomCross()
     else
     {
         // Pieces are not in the correct position
-        currentInt = convertFaceToInt(leftFacing);
-        targetInt = convertFaceToInt(FaceEnum::BACK);
-        difference = positiveMod(targetInt - currentInt + 1, 4) - 1;
-        int opposite = positiveMod(currentInt - targetInt + 1, 4) - 1;
+        // currentInt = convertFaceToInt(leftFacing);
+        // targetInt = convertFaceToInt(FaceEnum::BACK);
 
-        RotationEnum rotation = static_cast<RotationEnum>(difference);
-        RotationEnum oppositeRotation = static_cast<RotationEnum>(opposite);
+        RotationEnum rotation = getRotationToTarget(leftFacing, FaceEnum::BACK);
+        RotationEnum oppositeRotation = getRotationToTarget(FaceEnum::BACK, leftFacing);
+
+        // difference = positiveMod(targetInt - currentInt + 1, 4) - 1;
+        // int opposite = positiveMod(currentInt - targetInt + 1, 4) - 1;
+
+        // RotationEnum rotation = static_cast<RotationEnum>(difference);
+        // RotationEnum oppositeRotation = static_cast<RotationEnum>(opposite);
 
         CubeManager::doMove({ face, rotation });
         CubeManager::applyMoves(moves);
@@ -662,22 +691,22 @@ void Solver::positionBottomCorners()
             LocalCornerEnum currentCorner = CubeManager::getLocalCorner(correctCorner->index, face);
             LocalCornerEnum targetCorner = LocalCornerEnum::BOTTOM_LEFT;
 
-            int currentInt = static_cast<int>(currentCorner);
-            int targetInt = static_cast<int>(targetCorner);
+            // int currentInt = static_cast<int>(currentCorner);
+            // int targetInt = static_cast<int>(targetCorner);
 
-            int rotationInt = positiveMod(targetInt - currentInt - 1, 4) + 1;
+            // int rotationInt = positiveMod(targetInt - currentInt - 1, 4) + 1;
             
-            RotationEnum rotation = static_cast<RotationEnum>(rotationInt);
+            // RotationEnum rotation = static_cast<RotationEnum>(rotationInt);
+
+            RotationEnum rotation = getRotationToTarget(currentCorner, targetCorner);
+            RotationEnum oppositeRotation = getRotationToTarget(targetCorner, currentCorner);
 
             // Put correct piece into position where it is not affected
             CubeManager::doMove({ FaceEnum::DOWN, rotation });
             CubeManager::applyMoves(moves);
 
-            rotationInt = positiveMod(currentInt - targetInt - 1, 4) + 1;
-            rotation = static_cast<RotationEnum>(rotationInt);
-
             // Align bottom center again
-            CubeManager::doMove({ FaceEnum::DOWN, rotation }); // Undo bottom face rotation
+            CubeManager::doMove({ FaceEnum::DOWN, oppositeRotation }); // Undo bottom face rotation
         }
     }
     while (!finished);
@@ -825,6 +854,10 @@ int Solver::getCountFacing(FaceEnum face, QBTypeEnum faceType)
     return count;
 }
 
+FaceEnum Solver::getOtherSide(QB* qb, FaceEnum knownSide)
+{
+}
+
 int Solver::convertFaceToInt(FaceEnum face)
 {
     return (int)std::log2(static_cast<int>(face));
@@ -870,6 +903,18 @@ bool Solver::cornerInCorrectPosition(QB* corner)
 
     return (correctPosition == pos);
 }
+
+// RotationEnum Solver::getRotationToTarget(FaceEnum current, FaceEnum target)
+// {
+//     return getRotationToTarget(convertFaceToInt(current), convertFaceToInt(target));
+// }
+
+// RotationEnum Solver::getRotationToTarget(int current, int target)
+// {
+//     int change = positiveMod(target - current + 1, 4) - 1;
+
+//     return static_cast<RotationEnum>(change);
+// }
 
 std::array<FaceEnum, 2> Solver::convertDualFaceToFaces(FaceEnum corner)
 {
