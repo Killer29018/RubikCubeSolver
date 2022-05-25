@@ -35,16 +35,16 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
     float lowestY = (float)((sizeY - 1) / 2.0f) - (sizeY - 1);
     float lowestZ = (float)((sizeZ - 1) / 2.0f) - (sizeZ - 1);
 
-    for (int i = 0; i < sizeZ; i++)
+    for (uint8_t i = 0; i < sizeZ; i++)
     {
         s_Cubies[i] = new QB**[sizeY];
         s_CurrentCubies[i] = new QB**[sizeY];
-        for (int j = 0; j < sizeY; j++)
+        for (uint8_t j = 0; j < sizeY; j++)
         {
             s_Cubies[i][j] = new QB*[sizeX];
             s_CurrentCubies[i][j] = new QB*[sizeX];
 
-            for (int k = 0; k < sizeX; k++)
+            for (uint8_t k = 0; k < sizeX; k++)
             {
                 glm::vec3 pos(lowestX + k, lowestY + j, lowestZ + i);
                 glm::ivec3 index(k, j, i);
@@ -58,9 +58,9 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
     }
 
     // Top | Bottom
-    for (int i = 0; i < sizeZ; i++)
+    for (uint8_t i = 0; i < sizeZ; i++)
     {
-        for (int k = 0; k < sizeX; k++)
+        for (uint8_t k = 0; k < sizeX; k++)
         {
             s_Cubies[i][0][k]->addFace(FaceEnum::DOWN);
             s_Cubies[i][s_SizeY - 1][k]->addFace(FaceEnum::UP);
@@ -68,9 +68,9 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
     }
 
     // Left | Right
-    for (int i = 0; i < sizeZ; i++)
+    for (uint8_t i = 0; i < sizeZ; i++)
     {
-        for (int j = 0; j < sizeY; j++)
+        for (uint8_t j = 0; j < sizeY; j++)
         {
             s_Cubies[i][j][0]->addFace(FaceEnum::LEFT);
             s_Cubies[i][j][sizeX - 1]->addFace(FaceEnum::RIGHT);
@@ -78,9 +78,9 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
     }
 
     // Front | Back
-    for (int j = 0; j < sizeY; j++)
+    for (uint8_t j = 0; j < sizeY; j++)
     {
-        for (int k = 0; k < sizeX; k++)
+        for (uint8_t k = 0; k < sizeX; k++)
         {
             s_Cubies[0][j][k]->addFace(FaceEnum::BACK);
             s_Cubies[s_SizeZ - 1][j][k]->addFace(FaceEnum::FRONT);
@@ -89,20 +89,20 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
 
 
     // Swap Indices
-    uint16_t size = s_SizeX;
-    for (int i = 0; i < size; i++)
+    uint8_t size = s_SizeX;
+    for (uint8_t i = 0; i < size; i++)
     {
         s_SwapIndices.emplace_back(i, 0);
     }
-    for (int i = 1; i < size; i++)
+    for (uint8_t i = 1; i < size; i++)
     {
         s_SwapIndices.emplace_back(size - 1, i);
     }
-    for (int i = 1; i < size; i++)
+    for (uint8_t i = 1; i < size; i++)
     {
         s_SwapIndices.emplace_back(size - 1 - i, size - 1);
     }
-    for (int i = 1; i < size - 1; i++)
+    for (uint8_t i = 1; i < size - 1; i++)
     {
         s_SwapIndices.emplace_back(0, size - 1 - i);
     }
@@ -264,9 +264,10 @@ LocalEdgeEnum CubeManager::getLocalEdge(glm::ivec3 pos, FaceEnum face)
             return LocalEdgeEnum::RIGHT;
         else if (localPos.y == s_SizeY - 1)
             return LocalEdgeEnum::TOP;
-    }
 
-    assert(false && "Not reachable");
+    default:
+        assert(false && "Impossible");
+    }
 }
 
 LocalCornerEnum CubeManager::getLocalCorner(glm::ivec3 pos, FaceEnum face)
@@ -304,6 +305,9 @@ LocalCornerEnum CubeManager::getLocalCorner(glm::ivec3 pos, FaceEnum face)
             return LocalCornerEnum::BOTTOM_RIGHT;
         else
             return LocalCornerEnum::TOP_RIGHT;
+
+    default:
+        assert(false && "Impossible");
     }
 }
 
@@ -494,7 +498,7 @@ void CubeManager::swapCCW(uint16_t constant, uint16_t width, glm::ivec3 rotation
         glm::ivec2 currentPos, nextPos;
         glm::ivec3 currentIndex, nextIndex;
 
-        for (size_t i = s_SwapIndices.size() - 1; i >= width - 1; i--)
+        for (size_t i = s_SwapIndices.size() - 1; i >= (size_t)(width - 1); i--)
         {
             currentPos = s_SwapIndices.at(i);
             nextPos = s_SwapIndices.at(i - 2);
@@ -685,7 +689,7 @@ void CubeManager::swapCCWCurrent(uint16_t constant, uint16_t width, glm::ivec3 r
         glm::ivec2 currentPos, nextPos;
         glm::ivec3 currentIndex, nextIndex;
 
-        for (size_t i = s_SwapIndices.size() - 1; i >= width - 1; i--)
+        for (size_t i = s_SwapIndices.size() - 1; i >= (size_t)(width - 1); i--)
         {
             currentPos = s_SwapIndices.at(i);
             nextPos = s_SwapIndices.at(i - 2);

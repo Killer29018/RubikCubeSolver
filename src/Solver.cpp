@@ -7,11 +7,6 @@ uint16_t Solver::s_SizeX;
 uint16_t Solver::s_SizeY;
 uint16_t Solver::s_SizeZ;
 
-static int positiveMod(int i, int n)
-{
-    return (i % n + n) % n;
-}
-
 void Solver::loadCube(QB**** cubies, uint16_t sizeX, uint16_t sizeY, uint16_t sizeZ)
 {
     s_Cubies = cubies;
@@ -43,14 +38,12 @@ void Solver::solveCross()
     FaceEnum face = FaceEnum::UP;
     std::vector<QB*> topEdges = findQB(face, QBTypeEnum::EDGE);
 
-    for (int i = 0; i < topEdges.size(); i++)
+    for (size_t i = 0; i < topEdges.size(); i++)
     {
         QB* current = topEdges[i];
         glm::ivec3 pos = current->index;
 
-        FaceEnum faces = current->activeFaces;
         FaceEnum otherFace = getOtherFace(current, face);
-        // FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(faces) & ~static_cast<int>(face));
 
         FaceEnum facing = current->getFacingSide(face);
         FaceEnum otherFacing = current->getFacingSide(otherFace);
@@ -204,14 +197,11 @@ void Solver::solveCorners()
 
     std::vector<QB*> topCorners = findQB(face, QBTypeEnum::CORNER);
 
-    for (int i = 0; i < topCorners.size(); i++)
+    for (size_t i = 0; i < topCorners.size(); i++)
     {
         QB* current = topCorners[i];
         glm::ivec3 pos = current->index;
 
-        FaceEnum faces = current->activeFaces;
-
-        // FaceEnum otherFaces = static_cast<FaceEnum>(static_cast<int>(faces) & ~static_cast<int>(face));
         FaceEnum otherFaces = getOtherFace(current, face);
         std::array<FaceEnum, 2> corners = convertDualFaceToFaces(otherFaces);
 
@@ -308,6 +298,9 @@ void Solver::solveCorners()
                 CubeManager::doMove({ target, RotationEnum::PRIME });
                 CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
                 break;
+
+            default:
+                assert(false && "Unreachable");
             }
         }
 
@@ -359,7 +352,7 @@ void Solver::solveMiddleLayer()
 
     std::vector<QB*> nonBottomEdges = findNotQB(bottomFace, QBTypeEnum::EDGE);
 
-    for (int i = 0; i < nonBottomEdges.size(); i++)
+    for (size_t i = 0; i < nonBottomEdges.size(); i++)
     {
         QB* current = nonBottomEdges[i];
         glm::ivec3 pos = current->index;
@@ -405,7 +398,6 @@ void Solver::solveMiddleLayer()
         }
 
         // Piece is above where it needs to be
-        // FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(current->activeFaces) & ~(static_cast<int>(chosenFace)));
         FaceEnum otherFace = getOtherFace(current, chosenFace);
 
         RotationEnum rotation = getRotationToTarget(chosenFace, otherFace); // Either PRIME or NORMAL
@@ -436,7 +428,7 @@ void Solver::solveBottomCross()
 
     std::array<QB*, 2> downEdges;
     int index = 0;
-    for (int i = 0; i < bottomEdges.size(); i++)
+    for (size_t i = 0; i < bottomEdges.size(); i++)
     {
         QB* current = bottomEdges[i];
         if (current->getFacingSide(FaceEnum::DOWN) == FaceEnum::DOWN)
@@ -494,11 +486,10 @@ void Solver::alignBottomCross()
         { RotationEnum::TWICE,  0 } }; // Setup possible changes
 
     // Calculate the difference between each face and where the face wants to go
-    for (int i = 0; i < bottomEdges.size(); i++)
+    for (size_t i = 0; i < bottomEdges.size(); i++)
     {
         QB* current = bottomEdges[i];
 
-        // FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(current->activeFaces) & ~static_cast<int>(face));
         FaceEnum otherFace = getOtherFace(current, face);
         FaceEnum otherFacing = current->getFacingSide(otherFace);
 
@@ -525,15 +516,13 @@ void Solver::alignBottomCross()
     CubeManager::doMove({ face, currentRotation });
 
     // Cross is now aligned to so the most faces are correct
-
     const std::string moves = "L' D' L D' L' D2 L D'"; // Swaps Back and Right on bottom face
 
     std::vector<QB*> wrongPositions;
-    for (int i = 0; i < bottomEdges.size(); i++)
+    for (size_t i = 0; i < bottomEdges.size(); i++)
     {
         QB* current = bottomEdges[i];
 
-        // FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(current->activeFaces) & ~static_cast<int>(face));
         FaceEnum otherFace = getOtherFace(current, face);
         FaceEnum otherFacing = current->getFacingSide(otherFace);
 
@@ -545,12 +534,10 @@ void Solver::alignBottomCross()
 
     // There can only ever be either only 2 wrong
     // They are either next to eachother or opposite
-    // FaceEnum otherFace = static_cast<FaceEnum>(static_cast<int>(wrongPositions[0]->activeFaces) & ~static_cast<int>(face));
     FaceEnum otherFace = getOtherFace(wrongPositions[0], face);
     FaceEnum facing0 = wrongPositions[0]->getFacingSide(otherFace);
 
     otherFace = getOtherFace(wrongPositions[1], face);
-    // otherFace = static_cast<FaceEnum>(static_cast<int>(wrongPositions[1]->activeFaces) & ~static_cast<int>(face));
     FaceEnum facing1 = wrongPositions[1]->getFacingSide(otherFace);
 
     // Get the difference between the two chosen wrong faces
@@ -564,7 +551,6 @@ void Solver::alignBottomCross()
         CubeManager::applyMoves(moves);
 
         // Reorientate cross so it is correct
-        // FaceEnum chosenFace = static_cast<FaceEnum>(static_cast<int>(wrongPositions[0]->activeFaces) & ~static_cast<int>(face));
         FaceEnum chosenFace = getOtherFace(wrongPositions[0], face);
         FaceEnum chosenFacing = wrongPositions[0]->getFacingSide(chosenFace);
 
@@ -577,8 +563,6 @@ void Solver::alignBottomCross()
     QB* left = wrongPositions[0];
     QB* right = wrongPositions[1];
 
-    FaceEnum leftFace, rightFace, leftFacing, rightFacing;
-
     // The "left" piece is CW of the "right" so swap them
     if (rotation == RotationEnum::NORMAL)
     {
@@ -586,12 +570,7 @@ void Solver::alignBottomCross()
         right = wrongPositions[0];
     }
 
-    // leftFace = static_cast<FaceEnum>(static_cast<int>(left->activeFaces) & ~static_cast<int>(face));
-    leftFace = getOtherFace(left, face);
-    leftFacing = left->getFacingSide(leftFace);
-    // rightFace = static_cast<FaceEnum>(static_cast<int>(right->activeFaces) & ~static_cast<int>(face));
-    rightFace = getOtherFace(right, face);
-    rightFacing = right->getFacingSide(rightFace);
+    FaceEnum leftFacing = left->getFacingSide(getOtherFace(left, face));
 
     LocalEdgeEnum leftEdge = CubeManager::getLocalEdge(left->index, face);
     LocalEdgeEnum rightEdge = CubeManager::getLocalEdge(right->index, face);
@@ -627,7 +606,7 @@ void Solver::positionBottomCorners()
         finished = true;
         std::vector<QB*> wrongCorners;
         QB* correctCorner = nullptr; // There can only be all corners, one corner or no corners in the correct position
-        for (int i = 0; i < bottomCorners.size(); i++)
+        for (size_t i = 0; i < bottomCorners.size(); i++)
         {
             QB* current = bottomCorners[i];
             bool correctPosition = cornerInCorrectPosition(current);
@@ -676,7 +655,7 @@ void Solver::reorientateBottomCorners()
     // (R U R' U')2
     const std::string moves = "R U R' U' R U R' U'";
 
-    for (int i = 0; i < bottomCorners.size(); i++)
+    for (size_t i = 0; i < bottomCorners.size(); i++)
     {
         QB* current = s_Cubies[s_SizeZ - 1][0][s_SizeX - 1];
 
@@ -690,7 +669,6 @@ void Solver::reorientateBottomCorners()
 
     QB* chosen = bottomEdges[0];
 
-    // FaceEnum chosenFace = static_cast<FaceEnum>(static_cast<int>(chosen->activeFaces) & ~static_cast<int>(face));
     FaceEnum chosenFace = getOtherFace(chosen, face);
     FaceEnum facing = chosen->getFacingSide(chosenFace);
 
@@ -860,7 +838,6 @@ bool Solver::cornerInCorrectPosition(QB* corner)
 
     return (correctPosition == pos);
 }
-
 
 std::array<FaceEnum, 2> Solver::convertDualFaceToFaces(FaceEnum corner)
 {
