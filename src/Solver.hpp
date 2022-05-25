@@ -34,12 +34,14 @@ private:
     static std::vector<QB*> findNotQB(FaceEnum face, QBTypeEnum faceType);
     static int getCountFacing(FaceEnum face, QBTypeEnum faceType);
 
-    FaceEnum getOtherSide(QB* qb, FaceEnum knownSide);
+    static FaceEnum getOtherFace(QB* qb, FaceEnum knownSide);
 
     static int convertFaceToInt(FaceEnum face);
     static FaceEnum convertIntToFace(int faceInt);
 
     static bool cornerInCorrectPosition(QB* corner);
+
+    static std::array<FaceEnum, 2> convertDualFaceToFaces(FaceEnum faces);
 
 
     static RotationEnum getRotationToTarget(int current, int target)
@@ -59,8 +61,6 @@ private:
     {
         return getRotationToTarget(static_cast<int>(current), static_cast<int>(target));
     }
-
-    static std::array<FaceEnum, 2> convertDualFaceToFaces(FaceEnum faces);
 
     static int positiveMod(int dividend, int divisor)
     {
