@@ -8,19 +8,24 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include "Camera.hpp"
 #include "CubeManager.hpp"
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 800
-static KRE::Camera camera(glm::vec2(SCREEN_WIDTH, SCREEN_HEIGHT));
+
 static bool firstMouse = true;
+static bool mouseMove = false;
 static float lastX = 0.0f;
 static float lastY = 0.0f;
 
+static Camera camera({ SCREEN_WIDTH, SCREEN_HEIGHT });
+
 void mouseCallback(GLFWwindow* window, double xPos, double yPos);
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-void processKeys(KRE::Camera& camera);
+void processKeys();
 
 int main()
 {
@@ -35,7 +40,7 @@ int main()
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_SAMPLES, 4);
 
-    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Rubix Cube", NULL, NULL);
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Rubik Cube", NULL, NULL);
 
     if (!window)
     {
@@ -49,7 +54,8 @@ int main()
 
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetKeyCallback(window, keyCallback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
     int version = gladLoadGL(glfwGetProcAddress);
     if (!version)
@@ -64,17 +70,11 @@ int main()
     glEnable(GL_MULTISAMPLE);
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    camera.setPosition({ 0.0f, 2.0f, 5.0f });
-    camera.setCameraPerspective(KRE::CameraPerspective::PERSPECTIVE);
-    camera.setCameraMovement(KRE::CameraMovementTypes::FREE_FLY);
-
     KRE::Shader shader;
     shader.compilePath("res/shaders/basic.vert", "res/shaders/basic.frag");
 
-    glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-
     shader.bind();
-    shader.setUniformMatrix4("u_Projection", projection);
+    shader.setUniformMatrix4("u_Projection", camera.getProjectionMatrix());
 
     CubeManager::generate(3, 3, 3);
     Move::seconds = 0.05f;
@@ -86,13 +86,12 @@ int main()
         glfwPollEvents();
         CubeManager::update(KRE::Clock::deltaTime);
         
-        processKeys(camera);
+        processKeys();
 
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.bind();
-
         shader.setUniformMatrix4("u_View", camera.getViewMatrix());
 
         CubeManager::draw(shader);
@@ -108,6 +107,9 @@ int main()
 
 void mouseCallback(GLFWwindow* window, double xPos, double yPos)
 {
+    if (!mouseMove)
+        return;
+
     if (firstMouse)
     {
         lastX = xPos;
@@ -121,7 +123,7 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos)
     lastX = xPos;
     lastY = yPos;
 
-    camera.processMouseMovement(xOffset, yOffset);
+    camera.processAngleChange(xOffset, yOffset);
 }
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -171,25 +173,46 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         CubeManager::doMove({ FaceEnum::BACK, rotation });
 }
 
-void processKeys(KRE::Camera& camera)
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
-    using namespace KRE;
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        if (!mouseMove)
+        {
+            mouseMove = true;
+            firstMouse = true;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        }
+    }
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+    {
+        if (mouseMove)
+        {
+            mouseMove = false;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+    }
+}
 
-    if (Keyboard::getKey(GLFW_KEY_W))
-        camera.processKeyboard(CameraMovement::FORWARD, Clock::deltaTime);
-    if (Keyboard::getKey(GLFW_KEY_A))
-        camera.processKeyboard(CameraMovement::LEFT, Clock::deltaTime);
-    if (Keyboard::getKey(GLFW_KEY_S))
-        camera.processKeyboard(CameraMovement::BACK, Clock::deltaTime);
-    if (Keyboard::getKey(GLFW_KEY_D))
-        camera.processKeyboard(CameraMovement::RIGHT, Clock::deltaTime);
-    if (Keyboard::getKey(GLFW_KEY_SPACE))
-        camera.processKeyboard(CameraMovement::UP, Clock::deltaTime);
-    if (Keyboard::getKey(GLFW_KEY_LEFT_CONTROL))
-        camera.processKeyboard(CameraMovement::DOWN, Clock::deltaTime);
+void processKeys()
+{
+    // using namespace KRE;
 
-    if (Keyboard::getKey(GLFW_KEY_LEFT_SHIFT) && !camera.fastMovement)
-        camera.fastMovement = true;
-    else if (camera.fastMovement && !Keyboard::getKey(GLFW_KEY_LEFT_SHIFT))
-        camera.fastMovement = false;
+    // if (Keyboard::getKey(GLFW_KEY_W))
+    //     camera.processKeyboard(CameraMovement::FORWARD, Clock::deltaTime);
+    // if (Keyboard::getKey(GLFW_KEY_A))
+    //     camera.processKeyboard(CameraMovement::LEFT, Clock::deltaTime);
+    // if (Keyboard::getKey(GLFW_KEY_S))
+    //     camera.processKeyboard(CameraMovement::BACK, Clock::deltaTime);
+    // if (Keyboard::getKey(GLFW_KEY_D))
+    //     camera.processKeyboard(CameraMovement::RIGHT, Clock::deltaTime);
+    // if (Keyboard::getKey(GLFW_KEY_SPACE))
+    //     camera.processKeyboard(CameraMovement::UP, Clock::deltaTime);
+    // if (Keyboard::getKey(GLFW_KEY_LEFT_CONTROL))
+    //     camera.processKeyboard(CameraMovement::DOWN, Clock::deltaTime);
+
+    // if (Keyboard::getKey(GLFW_KEY_LEFT_SHIFT) && !camera.fastMovement)
+    //     camera.fastMovement = true;
+    // else if (camera.fastMovement && !Keyboard::getKey(GLFW_KEY_LEFT_SHIFT))
+    //     camera.fastMovement = false;
 }
