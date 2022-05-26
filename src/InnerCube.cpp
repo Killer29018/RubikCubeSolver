@@ -62,7 +62,6 @@ void InnerCube::draw(KRE::Shader& shader, glm::mat4 model)
 {
     shader.bind();
 
-    model = glm::scale(model, glm::vec3(1.0f));
     shader.setUniformMatrix4("u_Model", model);
     shader.setUniformVector3("u_Colour", { 0.1f, 0.1f, 0.1f });
 

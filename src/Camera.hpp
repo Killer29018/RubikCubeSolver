@@ -27,7 +27,9 @@ private:
     float m_Pitch = 0.0f;
     float m_Yaw = 90.0f;
 public:
+    Camera() = default;
     Camera(glm::vec2 windowSize);
+
     ~Camera() = default;
 
     void setAngle(float yaw, float pitch);
