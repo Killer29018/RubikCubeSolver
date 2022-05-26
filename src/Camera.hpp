@@ -7,8 +7,11 @@
 class Camera
 {
 public:
-    float mouseSensitivity = 0.1f;
+    float mouseSensitivity = 0.3f;
     float distance = 5.0f;
+
+    float minDistance = 3.0f;
+    float maxDistance = 20.0f;
 private:
     glm::vec2 m_WindowSize;
 
@@ -27,8 +30,10 @@ public:
     Camera(glm::vec2 windowSize);
     ~Camera() = default;
 
-    void setAngle(float pitch, float yaw);
+    void setAngle(float yaw, float pitch);
     void processAngleChange(float xOffset, float yOffset);
+
+    void processScrollWheel(float yOffset);
 
     glm::mat4 getProjectionMatrix();
     glm::mat4 getViewMatrix();

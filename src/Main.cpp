@@ -24,8 +24,7 @@ static Camera camera({ SCREEN_WIDTH, SCREEN_HEIGHT });
 void mouseCallback(GLFWwindow* window, double xPos, double yPos);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-void processKeys();
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 
 int main()
 {
@@ -55,7 +54,7 @@ int main()
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetScrollCallback(window, scrollCallback);
     
     int version = gladLoadGL(glfwGetProcAddress);
     if (!version)
@@ -69,6 +68,8 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    camera.setAngle(45.0f, 45.0f);
 
     KRE::Shader shader;
     shader.compilePath("res/shaders/basic.vert", "res/shaders/basic.frag");
@@ -85,8 +86,6 @@ int main()
         KRE::Clock::tick();
         glfwPollEvents();
         CubeManager::update(KRE::Clock::deltaTime);
-        
-        processKeys();
 
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -134,28 +133,14 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         return;
     }
 
-    if (action == GLFW_PRESS)
-        KRE::Keyboard::pressKey(key);
-    else if (action == GLFW_RELEASE)
-        KRE::Keyboard::unpressKey(key);
-
     RotationEnum rotation = RotationEnum::NORMAL;
 
     if (mods == GLFW_MOD_SHIFT)
         rotation = RotationEnum::PRIME;
 
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
-        // CubeManager::applyMoves("R2 L2 F2 B2 D2 U2");
-        // CubeManager::applyMoves("U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'");
-        // CubeManager::applyMoves("R2 B2 D2");
-        // CubeManager::applyMoves("U' L' U' F' R2 B' R F U B2 U B' L U' F U R F'");
-        // CubeManager::applyMoves("R2 B2 D2");
-        // CubeManager::applyMoves("R' D' R D L D L' D'");
-        // CubeManager::applyMoves("D L D' L' D' F' D F");
         CubeManager::applyMoves("L' D' L D' L' D2 L D' D2 L' D' L D' L' D2 L D'");
     if (key == GLFW_KEY_Z && action == GLFW_PRESS)
-        // CubeManager::applyMoves("L F' U2 R' B2 L2 B' L' U F2 R2 L2 D R2 U L2 F2 B2 U' B2");
-        // CubeManager::applyMoves("R2 B D2 F L2 F2 D2 F2 U2 R2 D2 R' D' U2 L B' R2 B' R' D2");
         CubeManager::applyMoves("R' U2 B L' F U' B D F U D' L D2 F' R B' D F' U' B' U D'");
     if (key == GLFW_KEY_V && action == GLFW_PRESS)
         Solver::solve();
@@ -165,7 +150,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         CubeManager::doMove({ FaceEnum::LEFT, rotation });
     if (key == GLFW_KEY_U && action == GLFW_PRESS)
         CubeManager::doMove({ FaceEnum::UP, rotation });
-    if (key == GLFW_KEY_X && action == GLFW_PRESS)
+    if (key == GLFW_KEY_D && action == GLFW_PRESS)
         CubeManager::doMove({ FaceEnum::DOWN, rotation });
     if (key == GLFW_KEY_F && action == GLFW_PRESS)
         CubeManager::doMove({ FaceEnum::FRONT, rotation });
@@ -181,7 +166,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
         {
             mouseMove = true;
             firstMouse = true;
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
     }
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
@@ -194,25 +179,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 
-void processKeys()
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
 {
-    // using namespace KRE;
-
-    // if (Keyboard::getKey(GLFW_KEY_W))
-    //     camera.processKeyboard(CameraMovement::FORWARD, Clock::deltaTime);
-    // if (Keyboard::getKey(GLFW_KEY_A))
-    //     camera.processKeyboard(CameraMovement::LEFT, Clock::deltaTime);
-    // if (Keyboard::getKey(GLFW_KEY_S))
-    //     camera.processKeyboard(CameraMovement::BACK, Clock::deltaTime);
-    // if (Keyboard::getKey(GLFW_KEY_D))
-    //     camera.processKeyboard(CameraMovement::RIGHT, Clock::deltaTime);
-    // if (Keyboard::getKey(GLFW_KEY_SPACE))
-    //     camera.processKeyboard(CameraMovement::UP, Clock::deltaTime);
-    // if (Keyboard::getKey(GLFW_KEY_LEFT_CONTROL))
-    //     camera.processKeyboard(CameraMovement::DOWN, Clock::deltaTime);
-
-    // if (Keyboard::getKey(GLFW_KEY_LEFT_SHIFT) && !camera.fastMovement)
-    //     camera.fastMovement = true;
-    // else if (camera.fastMovement && !Keyboard::getKey(GLFW_KEY_LEFT_SHIFT))
-    //     camera.fastMovement = false;
+    camera.processScrollWheel(-yOffset);
 }
