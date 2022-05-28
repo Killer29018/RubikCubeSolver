@@ -11,6 +11,16 @@ enum class RotationEnum
     TWICE   =  2,
 };
 
+enum class FaceIndex : uint16_t
+{
+    FRONT   = 0,
+    RIGHT   = 1,
+    BACK    = 2,
+    LEFT    = 3,
+    UP      = 4,
+    DOWN    = 5,
+};
+
 enum class FaceEnum : uint8_t
 {
     FRONT   = 1 << 0, // 1

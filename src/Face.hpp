@@ -10,80 +10,99 @@
 class Face
 {
 public:
-    glm::ivec3 facing;
-protected:
-    uint32_t m_VAO;
-
+private:
+    static uint32_t s_VAO[6];
     static uint32_t s_EBO;
-    static const uint32_t s_Indices[6];
-
-    ColourIndex faceColour;
 public:
-    Face() : faceColour(ColourIndex::WHITE) {}
-    Face(ColourIndex colour) : faceColour(colour) {}
-    ~Face() {}
+    static void initialize();
 
-    static void generateData();
+    static void draw(KRE::Shader& shader, FaceEnum activeFaces, glm::mat4 model);
 
-    virtual void generateFace() {};
+    static glm::ivec3 getFacing(FaceEnum facing);
+private:
+    Face() = default;
 
-    void draw(KRE::Shader& shader);
-protected:
-    void uploadData(uint32_t& vbo, const float* vertexData, int count);
+    static void setupVAOs();
+    static void setupVAO(uint32_t vao, float* vertices, int size);
 };
 
-class TopFace : public Face
-{
-public:
-    TopFace(bool generate = false) : Face(ColourIndex::WHITE) { if (generate) generateFace(); }
-    ~TopFace() {}
+// class Face
+// {
+// public:
+//     glm::ivec3 facing;
+// protected:
+//     uint32_t m_VAO;
 
-    void generateFace() override;
-};
+//     static uint32_t s_EBO;
+//     static const uint32_t s_Indices[6];
 
-class BottomFace : public Face
-{
-public:
-    BottomFace(bool generate = false) : Face(ColourIndex::YELLOW) { if (generate) generateFace(); }
-    ~BottomFace() {}
+//     ColourIndex faceColour;
+// public:
+//     Face() : faceColour(ColourIndex::WHITE) {}
+//     Face(ColourIndex colour) : faceColour(colour) {}
+//     ~Face() {}
 
-    void generateFace() override;
-};
+//     static void generateData();
 
-class FrontFace : public Face
-{
-public:
-    FrontFace(bool generate = false) : Face(ColourIndex::GREEN) { if (generate) generateFace(); }
-    ~FrontFace() {}
+//     virtual void generateFace() {};
 
-    void generateFace() override;
-};
+//     void draw(KRE::Shader& shader);
+// protected:
+//     void uploadData(uint32_t& vbo, const float* vertexData, int count);
+// };
 
-class BackFace : public Face
-{
-public:
-    BackFace(bool generate = false) : Face(ColourIndex::BLUE) { if (generate) generateFace(); }
-    ~BackFace() {}
+// class TopFace : public Face
+// {
+// public:
+//     TopFace(bool generate = false) : Face(ColourIndex::WHITE) { if (generate) generateFace(); }
+//     ~TopFace() {}
 
-    void generateFace() override;
-};
+//     void generateFace() override;
+// };
 
-class LeftFace : public Face
-{
-public:
-    LeftFace(bool generate = false) : Face(ColourIndex::ORANGE) { if (generate) generateFace(); }
-    ~LeftFace() {}
+// class BottomFace : public Face
+// {
+// public:
+//     BottomFace(bool generate = false) : Face(ColourIndex::YELLOW) { if (generate) generateFace(); }
+//     ~BottomFace() {}
 
-    void generateFace() override;
-};
+//     void generateFace() override;
+// };
 
-class RightFace : public Face
-{
-public:
-    RightFace(bool generate = false) : Face(ColourIndex::RED) { if (generate) generateFace(); }
-    ~RightFace() {}
+// class FrontFace : public Face
+// {
+// public:
+//     FrontFace(bool generate = false) : Face(ColourIndex::GREEN) { if (generate) generateFace(); }
+//     ~FrontFace() {}
 
-    void generateFace() override;
-};
+//     void generateFace() override;
+// };
+
+// class BackFace : public Face
+// {
+// public:
+//     BackFace(bool generate = false) : Face(ColourIndex::BLUE) { if (generate) generateFace(); }
+//     ~BackFace() {}
+
+//     void generateFace() override;
+// };
+
+// class LeftFace : public Face
+// {
+// public:
+//     LeftFace(bool generate = false) : Face(ColourIndex::ORANGE) { if (generate) generateFace(); }
+//     ~LeftFace() {}
+
+//     void generateFace() override;
+// };
+
+// class RightFace : public Face
+// {
+// public:
+//     RightFace(bool generate = false) : Face(ColourIndex::RED) { if (generate) generateFace(); }
+//     ~RightFace() {}
+
+//     void generateFace() override;
+// };
 
 #endif

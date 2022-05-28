@@ -46,6 +46,8 @@ void Application::init()
     setupGLFW();
     setupOpenGL();
 
+    Face::initialize();
+
     camera.setAngle(45.0f, 45.0f);
     camera.distance = 3.0f;
 
@@ -55,7 +57,7 @@ void Application::init()
     m_CubeShader.setUniformMatrix4("u_Projection", camera.getProjectionMatrix());
 
     CubeManager::generate(3, 3, 3);
-    Move::seconds = 0.1f;
+    Move::seconds = 1.0f;
 }
 
 void Application::setupGLFW()

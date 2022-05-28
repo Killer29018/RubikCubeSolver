@@ -6,6 +6,7 @@
 Camera::Camera(glm::vec2 windowSize)
     : m_WindowSize(windowSize)
 {
+    m_Center = glm::vec3(0.0f, 0.0f, 0.0f);
     recalculateVectors();
 }
 

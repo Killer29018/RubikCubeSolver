@@ -19,8 +19,8 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
     s_SizeY = sizeY;
     s_SizeZ = sizeZ;
 
-    InnerCube::generate();
-    Face::generateData();
+    // InnerCube::generate();
+    // Face::generateData();
 
     if (s_SizeX != s_SizeY || s_SizeX != s_SizeY)
     { 

@@ -14,7 +14,7 @@ public:
     glm::vec3 pos;
     glm::ivec3 index;
 private:
-    std::unordered_map<FaceEnum, Face> m_Faces;
+    size_t m_FaceCount = 0;
 
     // AnimationRotation
     glm::quat m_CurrentRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
@@ -33,7 +33,7 @@ public:
 
     void draw(KRE::Shader& shader);
 
-    size_t getFaceCount() { return m_Faces.size(); }
+    size_t getFaceCount() { return m_FaceCount; }
     bool hasFace(FaceEnum face) { return (activeFaces & face) == face; }
 
     FaceEnum getFacingSide(FaceEnum face);
