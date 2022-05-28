@@ -16,11 +16,11 @@ enum class ColourIndex
 const glm::vec3 faceColours[] = 
 {
     { 1.0f, 1.0f, 1.0f }, // White
-    { 0.985f, 0.945f, 0.0f }, // Yellow
-    { 0.189f, 0.985f, 0.047f }, // Green
-    { 0.0f, 0.2f, 0.985f }, // Blue
-    { 0.6f, 0.058f, 0.029f }, // Red
-    { 0.985f, 0.487f, 0.228f }, // Orange
+    { 0.917f, 0.985f, 0.0f }, // Yellow
+    { 0.208f, 0.985f, 0.004f }, // Green
+    { 0.0f, 0.173f, 0.985f }, // Blue
+    { 0.985f, 0.002f, 0.057f }, // Red
+    { 0.985f, 0.487f, 0.038f }, // Orange
 };
 
 #endif
