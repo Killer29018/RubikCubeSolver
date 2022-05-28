@@ -2,8 +2,6 @@
 
 #include <glm/gtx/quaternion.hpp>
 
-#include "InnerCube.hpp"
-
 #include <glm/gtx/string_cast.hpp>
 
 void QB::addFace(FaceEnum face)
