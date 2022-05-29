@@ -672,13 +672,9 @@ void Solver::reorientateBottomCorners()
     FaceEnum chosenFace = getOtherFace(chosen, face);
     FaceEnum facing = chosen->getFacingSide(chosenFace);
 
-    if (facing != chosenFace)
+    if (facing != chosenFace) // Final layer not oriented correctly
     {
-        int currentInt = convertFaceToInt(facing);
-        int targetInt = convertFaceToInt(chosenFace);
-
-        int rotationInt = positiveMod(targetInt - currentInt - 1, 4) + 1;
-        RotationEnum rotation = static_cast<RotationEnum>(rotationInt);
+        RotationEnum rotation = getRotationToTarget(facing, chosenFace);
 
         CubeManager::doMove({ face, rotation });
     }

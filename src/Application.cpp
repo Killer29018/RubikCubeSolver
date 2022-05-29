@@ -57,7 +57,7 @@ void Application::init()
     m_CubeShader.setUniformMatrix4("u_Projection", camera.getProjectionMatrix());
 
     CubeManager::generate(3, 3, 3);
-    Move::seconds = 1.0f;
+    Move::seconds = 0.1f;
 }
 
 void Application::setupGLFW()
