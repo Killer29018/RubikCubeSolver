@@ -43,21 +43,24 @@ private:
     static glm::vec3 coordsToPosition(uint16_t x, uint16_t y, uint16_t z);
     static glm::ivec3 getCurrentIndex(uint16_t constant, glm::ivec3 axis, glm::ivec2 swapPosition);
 
-    static void rotate(float dt);
-
-    static void swapCW(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, float percentage, int8_t angleMult);
-    static void swapCCW(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, float percentage, int8_t angleMult);
-
-    static void getSavedPositionsCW(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis);
-    static void getSavedPositionsCCW(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis);
-
+    static void rotateAnimate(float dt);
     static void rotateCurrent(Move& move);
 
-    static void swapCWCurrent(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, int8_t angleMult);
-    static void swapCCWCurrent(uint16_t constant, uint16_t width, glm::ivec3 rotationAxis, int8_t angleMult);
+    static void rotate(QB***** cubies, Move& move, float dt, bool animate);
 
-    static void getSavedPositionsCWCurrent(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis);
-    static void getSavedPositionsCCWCurrent(std::vector<QB*>& stored, int width, uint16_t constant, glm::ivec3 axis);
+    static void swapCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate);
+    static void swapCCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate);
+
+    static void getSavedPositionsCW(QB***** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
+    static void getSavedPositionsCCW(QB***** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
+
+    // static void rotateCurrent(Move& move);
+
+    // static void swapCWCurrent(uint16_t constant, glm::ivec3 rotationAxis, int8_t angleMult);
+    // static void swapCCWCurrent(uint16_t constant, glm::ivec3 rotationAxis, int8_t angleMult);
+
+    // static void getSavedPositionsCWCurrent(std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
+    // static void getSavedPositionsCCWCurrent(std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
 };
 
 #endif
