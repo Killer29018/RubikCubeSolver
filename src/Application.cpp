@@ -174,7 +174,8 @@ void Application::keyCallback(GLFWwindow* window, int key, int scancode, int act
         rotation = RotationEnum::PRIME;
 
     if (key == GLFW_KEY_C && action == GLFW_PRESS)
-        CubeManager::applyMoves("L' D' L D' L' D2 L D' D2 L' D' L D' L' D2 L D'");
+        // CubeManager::applyMoves("M2 E2 S2");
+        CubeManager::applyMoves("r2 R2 u2 U2 b2 B2");
     if (key == GLFW_KEY_Z && action == GLFW_PRESS)
         CubeManager::applyMoves("D L2 R2 U' B2 D L2 F2 L2 U2 B' R F' U R F D2 R F2 R' U'");
     if (key == GLFW_KEY_V && action == GLFW_PRESS)
@@ -191,6 +192,8 @@ void Application::keyCallback(GLFWwindow* window, int key, int scancode, int act
         CubeManager::doMove({ FaceEnum::FRONT, rotation });
     if (key == GLFW_KEY_B && action == GLFW_PRESS)
         CubeManager::doMove({ FaceEnum::BACK, rotation });
+    if (key == GLFW_KEY_M && action == GLFW_PRESS)
+        CubeManager::doMove({ FaceEnum::LEFT, rotation, 1 });
 }
 
 void Application::scrollCallback(GLFWwindow* window, double xOffset, double yOffset)

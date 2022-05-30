@@ -53,14 +53,6 @@ private:
 
     static void getSavedPositionsCW(QB***** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
     static void getSavedPositionsCCW(QB***** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
-
-    // static void rotateCurrent(Move& move);
-
-    // static void swapCWCurrent(uint16_t constant, glm::ivec3 rotationAxis, int8_t angleMult);
-    // static void swapCCWCurrent(uint16_t constant, glm::ivec3 rotationAxis, int8_t angleMult);
-
-    // static void getSavedPositionsCWCurrent(std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
-    // static void getSavedPositionsCCWCurrent(std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
 };
 
 #endif

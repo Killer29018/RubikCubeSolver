@@ -56,8 +56,8 @@ enum class LocalCornerEnum : uint8_t
 
 enum class SliceMode : uint8_t
 {
-    SINGLE,
-    ALL
+    SINGLE  = 0,
+    ALL     = 1,
 };
 
 struct Move
@@ -66,7 +66,7 @@ struct Move
 
     FaceEnum face;
     RotationEnum rotation;
-    int slice = 0;
+    uint8_t slice = 0;
     SliceMode sliceMode = SliceMode::SINGLE;
 
     float time = 0.0f;
@@ -74,7 +74,7 @@ struct Move
     Move() = default;
     Move(FaceEnum face) : face(face), rotation(RotationEnum::NONE) {}
     Move(FaceEnum face, RotationEnum rotation) : face(face), rotation(rotation) {}
-    Move(FaceEnum face, RotationEnum rotation, int slice, SliceMode mode = SliceMode::SINGLE) : face(face), rotation(rotation), slice(slice), sliceMode(mode) {}
+    Move(FaceEnum face, RotationEnum rotation, uint8_t slice, SliceMode mode = SliceMode::SINGLE) : face(face), rotation(rotation), slice(slice), sliceMode(mode) {}
 };
 
 namespace std
