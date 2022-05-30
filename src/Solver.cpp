@@ -14,6 +14,8 @@ void Solver::loadCube(QB**** cubies, uint16_t size)
 
 void Solver::solve()
 {
+    alignCenters();
+
     solveCross();
 
     solveCorners();
@@ -27,6 +29,52 @@ void Solver::solve()
     positionBottomCorners();
 
     reorientateBottomCorners();
+}
+
+void Solver::alignCenters()
+{
+    std::vector<QB*> topCenter = findQB(FaceEnum::UP, QBTypeEnum::CENTER);
+    QB* top = topCenter[0];
+
+    if (top->getFacingSide(FaceEnum::UP) != FaceEnum::UP) // Need to align top center
+    {
+        FaceEnum facing = top->getFacingSide(FaceEnum::UP);
+
+        switch(facing)
+        {
+        case FaceEnum::DOWN:
+            CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::TWICE, 1 }); break;
+
+        case FaceEnum::RIGHT:
+            CubeManager::doMove({ FaceEnum::FRONT, RotationEnum::PRIME, 1 }); break;
+        case FaceEnum::LEFT:
+            CubeManager::doMove({ FaceEnum::FRONT, RotationEnum::NORMAL, 1 }); break;
+
+        case FaceEnum::FRONT:
+            CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::NORMAL, 1 }); break;
+        case FaceEnum::BACK:
+            CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::PRIME, 1 }); break;
+        }
+    }
+
+    std::vector<QB*> frontCenter = findQB(FaceEnum::FRONT, QBTypeEnum::CENTER);
+    QB* front = frontCenter[0];
+
+    if (front->getFacingSide(FaceEnum::FRONT) != FaceEnum::FRONT)
+    {
+        FaceEnum facing = front->getFacingSide(FaceEnum::FRONT);
+
+        switch (facing)
+        {
+        case FaceEnum::BACK:
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE, 1 }); break;
+
+        case FaceEnum::RIGHT:
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME, 1 }); break;
+        case FaceEnum::LEFT:
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL, 1 }); break;
+        }
+    }
 }
 
 void Solver::solveCross()
@@ -511,6 +559,9 @@ void Solver::alignBottomCross()
 
     CubeManager::doMove({ face, currentRotation });
 
+    if (count == 4) // Pieces are now correct
+        return;
+
     // Cross is now aligned to so the most faces are correct
     const std::string moves = "L' D' L D' L' D2 L D'"; // Swaps Back and Right on bottom face
 
@@ -527,6 +578,7 @@ void Solver::alignBottomCross()
             wrongPositions.push_back(current);
         }
     }
+
 
     // There can only ever be either only 2 wrong
     // They are either next to eachother or opposite
@@ -651,14 +703,25 @@ void Solver::reorientateBottomCorners()
     // (R U R' U')2
     const std::string moves = "R U R' U' R U R' U'";
 
-    for (size_t i = 0; i < bottomCorners.size(); i++)
+    bool aligned = true;
+    for (size_t i = 0; i < bottomCorners.size() && aligned; i++)
     {
-        QB* current = s_Cubies[s_Size - 1][0][s_Size - 1];
+        QB* current = bottomCorners[i];
+        if (current->getFacingSide(face) != face)
+            aligned = false;
+    }
 
-        while (current->getFacingSide(face) != face)
-            CubeManager::applyMoves(moves);
+    if (!aligned)
+    {
+        for (size_t i = 0; i < bottomCorners.size(); i++)
+        {
+            QB* current = s_Cubies[s_Size - 1][0][s_Size - 1];
 
-        CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            while (current->getFacingSide(face) != face)
+                CubeManager::applyMoves(moves);
+
+            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+        }
     }
 
     std::vector<QB*> bottomEdges = findQB(face, QBTypeEnum::EDGE);

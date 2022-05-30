@@ -20,6 +20,7 @@ public:
     static void solve();
 private:
     Solver() {}
+    static void alignCenters();
     static void solveCross();
     static void solveCorners();
     static void solveMiddleLayer();

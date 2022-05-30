@@ -194,6 +194,10 @@ void Application::keyCallback(GLFWwindow* window, int key, int scancode, int act
         CubeManager::doMove({ FaceEnum::BACK, rotation });
     if (key == GLFW_KEY_M && action == GLFW_PRESS)
         CubeManager::doMove({ FaceEnum::LEFT, rotation, 1 });
+    if (key == GLFW_KEY_E && action == GLFW_PRESS)
+        CubeManager::doMove({ FaceEnum::DOWN, rotation, 1 });
+    if (key == GLFW_KEY_S && action == GLFW_PRESS)
+        CubeManager::doMove({ FaceEnum::FRONT, rotation, 1 });
 }
 
 void Application::scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
