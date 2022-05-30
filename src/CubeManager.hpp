@@ -19,11 +19,11 @@ private:
 
     static std::vector<glm::ivec2> s_SwapIndices;
 
-    static uint8_t s_SizeX, s_SizeY, s_SizeZ;
+    static uint8_t s_Size;
 
     static std::queue<Move> s_Moves;
 public:
-    static void generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ);
+    static void generate(uint8_t size);
 
     static void destroy();
 

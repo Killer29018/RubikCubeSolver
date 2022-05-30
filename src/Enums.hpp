@@ -54,6 +54,29 @@ enum class LocalCornerEnum : uint8_t
     BOTTOM_LEFT   = 3,
 };
 
+enum class SliceMode : uint8_t
+{
+    SINGLE,
+    ALL
+};
+
+struct Move
+{
+    inline static float seconds = 1.0f;
+
+    FaceEnum face;
+    RotationEnum rotation;
+    int slice = 0;
+    SliceMode sliceMode = SliceMode::SINGLE;
+
+    float time = 0.0f;
+
+    Move() = default;
+    Move(FaceEnum face) : face(face), rotation(RotationEnum::NONE) {}
+    Move(FaceEnum face, RotationEnum rotation) : face(face), rotation(rotation) {}
+    Move(FaceEnum face, RotationEnum rotation, int slice, SliceMode mode = SliceMode::SINGLE) : face(face), rotation(rotation), slice(slice), sliceMode(mode) {}
+};
+
 namespace std
 {
     template<>
@@ -80,18 +103,5 @@ inline FaceEnum& operator|=(FaceEnum& lhs, const FaceEnum& rhs)
 {
     return lhs = lhs | rhs;
 }
-
-struct Move
-{
-    inline static float seconds = 1.0f;
-    FaceEnum face;
-    RotationEnum rotation;
-
-    float time = 0.0f;
-
-    Move() = default;
-    Move(FaceEnum face) : face(face), rotation(RotationEnum::NONE) {}
-    Move(FaceEnum face, RotationEnum rotation) : face(face), rotation(rotation) {}
-};
 
 #endif

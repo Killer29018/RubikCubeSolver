@@ -13,9 +13,9 @@ class Solver
 public:
 private:
     static QB**** s_Cubies;
-    static uint16_t s_SizeX, s_SizeY, s_SizeZ;
+    static uint16_t s_Size;
 public:
-    static void loadCube(QB**** cubies, uint16_t sizeX, uint16_t sizeY, uint16_t sizeZ);
+    static void loadCube(QB**** cubies, uint16_t size);
 
     static void solve();
 private:

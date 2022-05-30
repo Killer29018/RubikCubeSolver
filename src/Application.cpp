@@ -56,7 +56,7 @@ void Application::init()
     m_CubeShader.bind();
     m_CubeShader.setUniformMatrix4("u_Projection", camera.getProjectionMatrix());
 
-    CubeManager::generate(3, 3, 3);
+    CubeManager::generate(3);
     Move::seconds = 0.1f;
 }
 

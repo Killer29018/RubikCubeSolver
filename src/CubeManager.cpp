@@ -7,44 +7,33 @@ QB**** CubeManager::s_CurrentCubies;
 
 std::vector<glm::ivec2> CubeManager::s_SwapIndices;
 
-uint8_t CubeManager::s_SizeX;
-uint8_t CubeManager::s_SizeY;
-uint8_t CubeManager::s_SizeZ;
+uint8_t CubeManager::s_Size;
 
 std::queue<Move> CubeManager::s_Moves;
 
-void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
+void CubeManager::generate(uint8_t size)
 {
-    s_SizeX = sizeX;
-    s_SizeY = sizeY;
-    s_SizeZ = sizeZ;
+    s_Size = size;
 
-    // InnerCube::generate();
-    // Face::generateData();
+    assert(s_Size == 3 && "Only a 3x3 Cube is currently supported");
 
-    if (s_SizeX != s_SizeY || s_SizeX != s_SizeY)
-    { 
-        assert(false && "Only same sized cubes are currently allowed");
-    }
-    assert(s_SizeZ == 3 && "Only a 3x3 Cube is currently supported");
+    s_Cubies = new QB***[s_Size];
+    s_CurrentCubies = new QB***[s_Size];
 
-    s_Cubies = new QB***[sizeZ];
-    s_CurrentCubies = new QB***[sizeZ];
+    float lowestX = (float)((s_Size - 1) / 2.0f) - (s_Size - 1);
+    float lowestY = (float)((s_Size - 1) / 2.0f) - (s_Size - 1);
+    float lowestZ = (float)((s_Size - 1) / 2.0f) - (s_Size - 1);
 
-    float lowestX = (float)((sizeX - 1) / 2.0f) - (sizeX - 1);
-    float lowestY = (float)((sizeY - 1) / 2.0f) - (sizeY - 1);
-    float lowestZ = (float)((sizeZ - 1) / 2.0f) - (sizeZ - 1);
-
-    for (uint8_t i = 0; i < sizeZ; i++)
+    for (uint8_t i = 0; i < s_Size; i++)
     {
-        s_Cubies[i] = new QB**[sizeY];
-        s_CurrentCubies[i] = new QB**[sizeY];
-        for (uint8_t j = 0; j < sizeY; j++)
+        s_Cubies[i] = new QB**[s_Size];
+        s_CurrentCubies[i] = new QB**[s_Size];
+        for (uint8_t j = 0; j < s_Size; j++)
         {
-            s_Cubies[i][j] = new QB*[sizeX];
-            s_CurrentCubies[i][j] = new QB*[sizeX];
+            s_Cubies[i][j] = new QB*[s_Size];
+            s_CurrentCubies[i][j] = new QB*[s_Size];
 
-            for (uint8_t k = 0; k < sizeX; k++)
+            for (uint8_t k = 0; k < s_Size; k++)
             {
                 glm::vec3 pos(lowestX + k, lowestY + j, lowestZ + i);
                 glm::ivec3 index(k, j, i);
@@ -58,65 +47,64 @@ void CubeManager::generate(uint8_t sizeX, uint8_t sizeY, uint8_t sizeZ)
     }
 
     // Top | Bottom
-    for (uint8_t i = 0; i < sizeZ; i++)
+    for (uint8_t i = 0; i < s_Size; i++)
     {
-        for (uint8_t k = 0; k < sizeX; k++)
+        for (uint8_t k = 0; k < s_Size; k++)
         {
             s_Cubies[i][0][k]->addFace(FaceEnum::DOWN);
-            s_Cubies[i][s_SizeY - 1][k]->addFace(FaceEnum::UP);
+            s_Cubies[i][s_Size - 1][k]->addFace(FaceEnum::UP);
         }
     }
 
     // Left | Right
-    for (uint8_t i = 0; i < sizeZ; i++)
+    for (uint8_t i = 0; i < s_Size; i++)
     {
-        for (uint8_t j = 0; j < sizeY; j++)
+        for (uint8_t j = 0; j < s_Size; j++)
         {
             s_Cubies[i][j][0]->addFace(FaceEnum::LEFT);
-            s_Cubies[i][j][sizeX - 1]->addFace(FaceEnum::RIGHT);
+            s_Cubies[i][j][s_Size - 1]->addFace(FaceEnum::RIGHT);
         }
     }
 
     // Front | Back
-    for (uint8_t j = 0; j < sizeY; j++)
+    for (uint8_t j = 0; j < s_Size; j++)
     {
-        for (uint8_t k = 0; k < sizeX; k++)
+        for (uint8_t k = 0; k < s_Size; k++)
         {
             s_Cubies[0][j][k]->addFace(FaceEnum::BACK);
-            s_Cubies[s_SizeZ - 1][j][k]->addFace(FaceEnum::FRONT);
+            s_Cubies[s_Size - 1][j][k]->addFace(FaceEnum::FRONT);
         }
     }
 
 
     // Swap Indices
-    uint8_t size = s_SizeX;
-    for (uint8_t i = 0; i < size; i++)
+    for (uint8_t i = 0; i < s_Size; i++)
     {
         s_SwapIndices.emplace_back(i, 0);
     }
-    for (uint8_t i = 1; i < size; i++)
+    for (uint8_t i = 1; i < s_Size; i++)
     {
-        s_SwapIndices.emplace_back(size - 1, i);
+        s_SwapIndices.emplace_back(s_Size - 1, i);
     }
-    for (uint8_t i = 1; i < size; i++)
+    for (uint8_t i = 1; i < s_Size; i++)
     {
-        s_SwapIndices.emplace_back(size - 1 - i, size - 1);
+        s_SwapIndices.emplace_back(s_Size - 1 - i, s_Size - 1);
     }
-    for (uint8_t i = 1; i < size - 1; i++)
+    for (uint8_t i = 1; i < s_Size - 1; i++)
     {
-        s_SwapIndices.emplace_back(0, size - 1 - i);
+        s_SwapIndices.emplace_back(0, s_Size - 1 - i);
     }
 
-    Solver::loadCube(s_CurrentCubies, s_SizeX, s_SizeY, s_SizeZ);
+    Solver::loadCube(s_CurrentCubies, s_Size);
 }
 
 void CubeManager::destroy()
 {
-    for (int i = 0; i < s_SizeZ; i++)
+    for (int i = 0; i < s_Size; i++)
     {
-        for (int j = 0; j < s_SizeY; j++)
+        for (int j = 0; j < s_Size; j++)
         {
-            for (int k = 0; k < s_SizeX; k++)
+            for (int k = 0; k < s_Size; k++)
             {
                 delete s_Cubies[i][j][k];
             }
@@ -129,11 +117,11 @@ void CubeManager::destroy()
 
 void CubeManager::draw(KRE::Shader& shader)
 {
-    for (int i = 0; i < s_SizeZ; i++)
+    for (int i = 0; i < s_Size; i++)
     {
-        for (int j = 0; j < s_SizeY; j++)
+        for (int j = 0; j < s_Size; j++)
         {
-            for (int k = 0; k < s_SizeX; k++)
+            for (int k = 0; k < s_Size; k++)
             {
                 s_Cubies[i][j][k]->draw(shader);
             }
@@ -202,7 +190,7 @@ glm::ivec2 CubeManager::getLocalPos(glm::ivec3 pos, FaceEnum face)
     {
     case FaceEnum::UP: // Y is locked
         localPos.x = pos.x;
-        localPos.y = s_SizeZ - 1 - pos.z;
+        localPos.y = s_Size - 1 - pos.z;
         break;
     case FaceEnum::DOWN:
         localPos.x = pos.x;
@@ -214,7 +202,7 @@ glm::ivec2 CubeManager::getLocalPos(glm::ivec3 pos, FaceEnum face)
         localPos.y = pos.y;
         break;
     case FaceEnum::RIGHT:
-        localPos.x = s_SizeZ - 1 - pos.z;
+        localPos.x = s_Size - 1 - pos.z;
         localPos.y = pos.y;
         break;
 
@@ -223,7 +211,7 @@ glm::ivec2 CubeManager::getLocalPos(glm::ivec3 pos, FaceEnum face)
         localPos.y = pos.y;
         break;
     case FaceEnum::BACK:
-        localPos.x = s_SizeX - 1 - pos.x;
+        localPos.x = s_Size - 1 - pos.x;
         localPos.y = pos.y;
         break;
     }
@@ -246,23 +234,23 @@ LocalEdgeEnum CubeManager::getLocalEdge(glm::ivec3 pos, FaceEnum face)
     {
     case FaceEnum::UP:
     case FaceEnum::DOWN:
-        if (localPos.x == s_SizeX - 1)
+        if (localPos.x == s_Size - 1)
             return LocalEdgeEnum::RIGHT;
-        else if (localPos.y == s_SizeZ - 1)
+        else if (localPos.y == s_Size - 1)
             return LocalEdgeEnum::TOP;
 
     case FaceEnum::LEFT:
     case FaceEnum::RIGHT:
-        if (localPos.x == s_SizeZ - 1)
+        if (localPos.x == s_Size - 1)
             return LocalEdgeEnum::RIGHT;
-        else if (localPos.y == s_SizeY - 1)
+        else if (localPos.y == s_Size - 1)
             return LocalEdgeEnum::TOP;
 
     case FaceEnum::FRONT:
     case FaceEnum::BACK:
-        if (localPos.x == s_SizeX - 1)
+        if (localPos.x == s_Size - 1)
             return LocalEdgeEnum::RIGHT;
-        else if (localPos.y == s_SizeY - 1)
+        else if (localPos.y == s_Size - 1)
             return LocalEdgeEnum::TOP;
 
     default:
@@ -281,27 +269,27 @@ LocalCornerEnum CubeManager::getLocalCorner(glm::ivec3 pos, FaceEnum face)
     {
     case FaceEnum::UP:
     case FaceEnum::DOWN:
-        if (localPos.x == 0 && localPos.y == s_SizeZ - 1)
+        if (localPos.x == 0 && localPos.y == s_Size - 1)
             return LocalCornerEnum::TOP_LEFT;
-        else if (localPos.x == s_SizeX - 1 && localPos.y == 0)
+        else if (localPos.x == s_Size - 1 && localPos.y == 0)
             return LocalCornerEnum::BOTTOM_RIGHT;
         else
             return LocalCornerEnum::TOP_RIGHT;
 
     case FaceEnum::LEFT:
     case FaceEnum::RIGHT:
-        if (localPos.x == 0 && localPos.y == s_SizeY - 1)
+        if (localPos.x == 0 && localPos.y == s_Size - 1)
             return LocalCornerEnum::TOP_LEFT;
-        else if (localPos.x == s_SizeZ - 1 && localPos.y == 0)
+        else if (localPos.x == s_Size - 1 && localPos.y == 0)
             return LocalCornerEnum::BOTTOM_RIGHT;
         else
             return LocalCornerEnum::TOP_RIGHT;
 
     case FaceEnum::FRONT:
     case FaceEnum::BACK:
-        if (localPos.x == 0 && localPos.y == s_SizeY - 1)
+        if (localPos.x == 0 && localPos.y == s_Size - 1)
             return LocalCornerEnum::TOP_LEFT;
-        else if (localPos.x == s_SizeX - 1 && localPos.y == 0)
+        else if (localPos.x == s_Size - 1 && localPos.y == 0)
             return LocalCornerEnum::BOTTOM_RIGHT;
         else
             return LocalCornerEnum::TOP_RIGHT;
@@ -314,9 +302,9 @@ LocalCornerEnum CubeManager::getLocalCorner(glm::ivec3 pos, FaceEnum face)
 glm::vec3 CubeManager::coordsToPosition(uint16_t x, uint16_t y, uint16_t z)
 {
     glm::vec3 returnVec(0.0f);
-    returnVec.x = (float)(((s_SizeX - 1) / 2.0f) - (s_SizeX - 1)) + x;
-    returnVec.y = (float)(((s_SizeY - 1) / 2.0f) - (s_SizeY - 1)) + y;
-    returnVec.z = (float)(((s_SizeZ - 1) / 2.0f) - (s_SizeZ - 1)) + z;
+    returnVec.x = (float)(((s_Size - 1) / 2.0f) - (s_Size - 1)) + x;
+    returnVec.y = (float)(((s_Size - 1) / 2.0f) - (s_Size - 1)) + y;
+    returnVec.z = (float)(((s_Size - 1) / 2.0f) - (s_Size - 1)) + z;
 
     return returnVec;
 }
@@ -370,11 +358,11 @@ void CubeManager::rotate(float dt)
     {
         case FaceEnum::UP:
             rotationAxis = glm::vec3(0, -1, 0);
-            position = s_SizeY - 1;
+            position = s_Size - 1;
             if (move.rotation == RotationEnum::PRIME)
-                swapCCW(position, s_SizeX, rotationAxis, percentage, rotationInt);
+                swapCCW(position, s_Size, rotationAxis, percentage, rotationInt);
             else
-                swapCW(position, s_SizeX, rotationAxis, percentage, rotationInt);
+                swapCW(position, s_Size, rotationAxis, percentage, rotationInt);
 
             break;
 
@@ -383,45 +371,45 @@ void CubeManager::rotate(float dt)
             position = 0;
 
             if (move.rotation == RotationEnum::PRIME)
-                swapCW(position, s_SizeX, rotationAxis, percentage, rotationInt);
+                swapCW(position, s_Size, rotationAxis, percentage, rotationInt);
             else
-                swapCCW(position, s_SizeX, rotationAxis, percentage, rotationInt);
+                swapCCW(position, s_Size, rotationAxis, percentage, rotationInt);
             break;
 
         case FaceEnum::RIGHT:
             rotationAxis = glm::vec3(-1, 0, 0);
-            position = s_SizeX - 1;
+            position = s_Size - 1;
             if (move.rotation == RotationEnum::PRIME)
-                swapCW(position, s_SizeZ, rotationAxis, percentage, rotationInt);
+                swapCW(position, s_Size, rotationAxis, percentage, rotationInt);
             else
-                swapCCW(position, s_SizeZ, rotationAxis, percentage, rotationInt);
+                swapCCW(position, s_Size, rotationAxis, percentage, rotationInt);
             break;
 
         case FaceEnum::LEFT:
             rotationAxis = glm::vec3(1, 0, 0);
             position = 0;
             if (move.rotation == RotationEnum::PRIME)
-                swapCCW(position, s_SizeZ, rotationAxis, percentage, rotationInt);
+                swapCCW(position, s_Size, rotationAxis, percentage, rotationInt);
             else
-                swapCW(position, s_SizeZ, rotationAxis, percentage, rotationInt);
+                swapCW(position, s_Size, rotationAxis, percentage, rotationInt);
             break;
 
         case FaceEnum::FRONT:
             rotationAxis = glm::vec3(0, 0, -1);
-            position = s_SizeZ - 1;
+            position = s_Size - 1;
             if (move.rotation == RotationEnum::PRIME)
-                swapCW(position, s_SizeX, rotationAxis, percentage, rotationInt);
+                swapCW(position, s_Size, rotationAxis, percentage, rotationInt);
             else
-                swapCCW(position, s_SizeX, rotationAxis, percentage, rotationInt);
+                swapCCW(position, s_Size, rotationAxis, percentage, rotationInt);
             break;
 
         case FaceEnum::BACK:
             rotationAxis = glm::vec3(0, 0, 1);
             position = 0;
             if (move.rotation == RotationEnum::PRIME)
-                swapCCW(position, s_SizeX, rotationAxis, percentage, rotationInt);
+                swapCCW(position, s_Size, rotationAxis, percentage, rotationInt);
             else
-                swapCW(position, s_SizeX, rotationAxis, percentage, rotationInt);
+                swapCW(position, s_Size, rotationAxis, percentage, rotationInt);
             break;
     }
 
@@ -581,11 +569,11 @@ void CubeManager::rotateCurrent(Move& move)
     {
         case FaceEnum::UP:
             rotationAxis = glm::vec3(0, -1, 0);
-            position = s_SizeY - 1;
+            position = s_Size - 1;
             if (move.rotation == RotationEnum::PRIME)
-                swapCCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+                swapCCWCurrent(position, s_Size, rotationAxis, rotationInt);
             else
-                swapCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+                swapCWCurrent(position, s_Size, rotationAxis, rotationInt);
 
             break;
 
@@ -594,45 +582,45 @@ void CubeManager::rotateCurrent(Move& move)
             position = 0;
 
             if (move.rotation == RotationEnum::PRIME)
-                swapCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+                swapCWCurrent(position, s_Size, rotationAxis, rotationInt);
             else
-                swapCCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+                swapCCWCurrent(position, s_Size, rotationAxis, rotationInt);
             break;
 
         case FaceEnum::RIGHT:
             rotationAxis = glm::vec3(-1, 0, 0);
-            position = s_SizeX - 1;
+            position = s_Size - 1;
             if (move.rotation == RotationEnum::PRIME)
-                swapCWCurrent(position, s_SizeZ, rotationAxis, rotationInt);
+                swapCWCurrent(position, s_Size, rotationAxis, rotationInt);
             else
-                swapCCWCurrent(position, s_SizeZ, rotationAxis, rotationInt);
+                swapCCWCurrent(position, s_Size, rotationAxis, rotationInt);
             break;
 
         case FaceEnum::LEFT:
             rotationAxis = glm::vec3(1, 0, 0);
             position = 0;
             if (move.rotation == RotationEnum::PRIME)
-                swapCCWCurrent(position, s_SizeZ, rotationAxis, rotationInt);
+                swapCCWCurrent(position, s_Size, rotationAxis, rotationInt);
             else
-                swapCWCurrent(position, s_SizeZ, rotationAxis, rotationInt);
+                swapCWCurrent(position, s_Size, rotationAxis, rotationInt);
             break;
 
         case FaceEnum::FRONT:
             rotationAxis = glm::vec3(0, 0, -1);
-            position = s_SizeZ - 1;
+            position = s_Size - 1;
             if (move.rotation == RotationEnum::PRIME)
-                swapCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+                swapCWCurrent(position, s_Size, rotationAxis, rotationInt);
             else
-                swapCCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+                swapCCWCurrent(position, s_Size, rotationAxis, rotationInt);
             break;
 
         case FaceEnum::BACK:
             rotationAxis = glm::vec3(0, 0, 1);
             position = 0;
             if (move.rotation == RotationEnum::PRIME)
-                swapCCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+                swapCCWCurrent(position, s_Size, rotationAxis, rotationInt);
             else
-                swapCWCurrent(position, s_SizeX, rotationAxis, rotationInt);
+                swapCWCurrent(position, s_Size, rotationAxis, rotationInt);
             break;
     }
 }

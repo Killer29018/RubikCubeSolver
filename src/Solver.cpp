@@ -3,17 +3,13 @@
 #include "CubeManager.hpp"
 
 QB**** Solver::s_Cubies;
-uint16_t Solver::s_SizeX;
-uint16_t Solver::s_SizeY;
-uint16_t Solver::s_SizeZ;
+uint16_t Solver::s_Size;
 
-void Solver::loadCube(QB**** cubies, uint16_t sizeX, uint16_t sizeY, uint16_t sizeZ)
+void Solver::loadCube(QB**** cubies, uint16_t size)
 {
     s_Cubies = cubies;
 
-    s_SizeX = sizeX;
-    s_SizeY = sizeY;
-    s_SizeZ = sizeZ;
+    s_Size = size;
 }
 
 void Solver::solve()
@@ -48,7 +44,7 @@ void Solver::solveCross()
         FaceEnum facing = current->getFacingSide(face);
         FaceEnum otherFacing = current->getFacingSide(otherFace);
 
-        if (pos.y == s_SizeY - 1) // Top Row
+        if (pos.y == s_Size - 1) // Top Row
         {
             if (facing == FaceEnum::UP) // Facing Correct Way
             {
@@ -211,7 +207,7 @@ void Solver::solveCorners()
         cornerFacing[0] = current->getFacingSide(corners[0]);
         cornerFacing[1] = current->getFacingSide(corners[1]);
 
-        if (pos.y == s_SizeY - 1) // Top Row
+        if (pos.y == s_Size - 1) // Top Row
         {
             if (facing == FaceEnum::UP) // Facing correct way
             {
@@ -657,7 +653,7 @@ void Solver::reorientateBottomCorners()
 
     for (size_t i = 0; i < bottomCorners.size(); i++)
     {
-        QB* current = s_Cubies[s_SizeZ - 1][0][s_SizeX - 1];
+        QB* current = s_Cubies[s_Size - 1][0][s_Size - 1];
 
         while (current->getFacingSide(face) != face)
             CubeManager::applyMoves(moves);
@@ -723,11 +719,11 @@ void Solver::insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge)
 std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
 {
     std::vector<QB*> edges;
-    for (int z = 0; z < s_SizeZ; z++)
+    for (int z = 0; z < s_Size; z++)
     {
-        for (int y = 0; y < s_SizeY; y++)
+        for (int y = 0; y < s_Size; y++)
         {
-            for (int x = 0; x < s_SizeX; x++)
+            for (int x = 0; x < s_Size; x++)
             {
                 size_t count = s_Cubies[z][y][x]->getFaceCount();
                 if (count == static_cast<int>(faceType) && s_Cubies[z][y][x]->hasFace(face))
@@ -744,11 +740,11 @@ std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
 std::vector<QB*> Solver::findNotQB(FaceEnum face, QBTypeEnum faceType)
 {
     std::vector<QB*> edges;
-    for (int z = 0; z < s_SizeZ; z++)
+    for (int z = 0; z < s_Size; z++)
     {
-        for (int y = 0; y < s_SizeY; y++)
+        for (int y = 0; y < s_Size; y++)
         {
-            for (int x = 0; x < s_SizeX; x++)
+            for (int x = 0; x < s_Size; x++)
             {
                 size_t count = s_Cubies[z][y][x]->getFaceCount();
                 if (count == static_cast<int>(faceType) && !s_Cubies[z][y][x]->hasFace(face))
@@ -765,11 +761,11 @@ std::vector<QB*> Solver::findNotQB(FaceEnum face, QBTypeEnum faceType)
 int Solver::getCountFacing(FaceEnum face, QBTypeEnum faceType)
 {
     int count = 0;
-    for (int z = 0; z < s_SizeZ; z++)
+    for (int z = 0; z < s_Size; z++)
     {
-        for (int y = 0; y < s_SizeY; y++)
+        for (int y = 0; y < s_Size; y++)
         {
-            for (int x = 0; x < s_SizeX; x++)
+            for (int x = 0; x < s_Size; x++)
             {
                 if (s_Cubies[z][y][x]->hasFace(face) && s_Cubies[z][y][x]->getFaceCount() == static_cast<int>(faceType))
                 {
@@ -807,7 +803,7 @@ bool Solver::cornerInCorrectPosition(QB* corner)
 
     if ((corner->activeFaces & FaceEnum::UP) == FaceEnum::UP)
     {
-        correctPosition.y = s_SizeY - 1;
+        correctPosition.y = s_Size - 1;
     }
     else if ((corner->activeFaces & FaceEnum::DOWN) == FaceEnum::DOWN)
     {
@@ -820,12 +816,12 @@ bool Solver::cornerInCorrectPosition(QB* corner)
     }
     else if ((corner->activeFaces & FaceEnum::RIGHT) == FaceEnum::RIGHT)
     {
-        correctPosition.x = s_SizeX - 1;
+        correctPosition.x = s_Size - 1;
     }
 
     if ((corner->activeFaces & FaceEnum::FRONT) == FaceEnum::FRONT)
     {
-        correctPosition.z = s_SizeZ - 1;
+        correctPosition.z = s_Size - 1;
     }
     else if ((corner->activeFaces & FaceEnum::BACK) == FaceEnum::BACK)
     {
