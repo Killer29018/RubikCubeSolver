@@ -177,14 +177,14 @@ void Application::setupFramebuffer()
 
     glGenTextures(1, &m_ScreenTexture);
     glBindTexture(GL_TEXTURE_2D, m_ScreenTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_WindowSize.x, m_WindowSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_WindowSize.x, m_WindowSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glGenTextures(1, &m_PickingTexture);
     glBindTexture(GL_TEXTURE_2D, m_PickingTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_WindowSize.x, m_WindowSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_WindowSize.x, m_WindowSize.y, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -192,7 +192,9 @@ void Application::setupFramebuffer()
     glGenRenderbuffers(1, &m_RBO);
     glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_WindowSize.x, m_WindowSize.y);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    GLenum bufs[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, bufs);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ScreenTexture, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_PickingTexture, 0);
@@ -243,7 +245,7 @@ void Application::mouseButtonCallback(GLFWwindow* window, int button, int action
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
     }
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+    else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
     {
         if (app->mouseMove)
         {

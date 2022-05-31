@@ -45,7 +45,7 @@ void QB::draw(KRE::Shader& shader)
 
     shader.bind();
 
-    // shader.setUniformMatrix4("u_Model", model);
+    shader.setUniformVector3("u_QBPosition", index);
 
     Face::draw(shader, activeFaces, model);
 

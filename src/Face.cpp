@@ -33,6 +33,7 @@ void Face::draw(KRE::Shader& shader, FaceEnum activeFaces, glm::mat4 model)
         }
 
         shader.setUniformInt("u_CurrentColour", colour);
+        shader.setUniformInt("u_QBFace", static_cast<int>(face));
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
     }
