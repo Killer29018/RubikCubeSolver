@@ -1,6 +1,6 @@
 #version 330 core
 
-out vec4 f_Colour;
+layout (location = 0) out vec4 f_Colour;
 
 uniform vec4 u_Colours[7];
 uniform int u_CurrentColour;

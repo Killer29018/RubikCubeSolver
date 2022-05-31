@@ -26,14 +26,34 @@ void Application::run()
 
         CubeManager::update(KRE::Clock::deltaTime);
 
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_CubeShader.bind();
         m_CubeShader.setUniformMatrix4("u_View", camera.getViewMatrix());
 
         CubeManager::draw(m_CubeShader);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+        glDisable(GL_DEPTH_TEST);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        m_ScreenShader.bind();
+        glBindVertexArray(m_ScreenVAO);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_ScreenTexture);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindVertexArray(0);
 
         glfwSwapBuffers(m_Window);
     }
@@ -45,16 +65,23 @@ void Application::init()
 
     setupGLFW();
     setupOpenGL();
+    setupFramebuffer();
+    setupScreenVAO();
 
     Face::initialize();
 
     camera.setAngle(45.0f, 45.0f);
     camera.distance = 3.0f;
 
-    m_CubeShader.compilePath("res/shaders/basic.vert", "res/shaders/basic.frag");
+    m_CubeShader.compilePath("res/shaders/cube.vert", "res/shaders/cube.frag");
+
+    m_ScreenShader.compilePath("res/shaders/screen.vert", "res/shaders/screen.frag");
 
     m_CubeShader.bind();
     m_CubeShader.setUniformMatrix4("u_Projection", camera.getProjectionMatrix());
+
+    m_ScreenShader.bind();
+    m_ScreenShader.setUniformInt("u_ScreenTexture", 0);
 
     CubeManager::generate(3);
     Move::seconds = 0.1f;
@@ -109,6 +136,72 @@ void Application::setupOpenGL()
     glEnable(GL_MULTISAMPLE);
 
     glViewport(0, 0, m_WindowSize.x, m_WindowSize.y);
+}
+
+void Application::setupScreenVAO()
+{
+    float vertices[] = {
+        // Position     Tex Coords
+        -1.0f, -1.0f,   0.0f, 0.0f,
+        -1.0f,  1.0f,   0.0f, 1.0f,
+         1.0f, -1.0f,   1.0f, 0.0f,
+
+        -1.0f,  1.0f,   0.0f, 1.0f,
+         1.0f, -1.0f,   1.0f, 0.0f,
+         1.0f,  1.0f,   1.0f, 1.0f
+    };
+
+    uint32_t vbo;
+
+    glGenVertexArrays(1, &m_ScreenVAO);
+    glBindVertexArray(m_ScreenVAO);
+
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void Application::setupFramebuffer()
+{
+    glGenFramebuffers(1, &m_FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+
+    glGenTextures(1, &m_ScreenTexture);
+    glBindTexture(GL_TEXTURE_2D, m_ScreenTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_WindowSize.x, m_WindowSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenTextures(1, &m_PickingTexture);
+    glBindTexture(GL_TEXTURE_2D, m_PickingTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_WindowSize.x, m_WindowSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenRenderbuffers(1, &m_RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_WindowSize.x, m_WindowSize.y);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ScreenTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_PickingTexture, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "ERROR::Framebuffer is incomplete\n";
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Application::mouseCallback(GLFWwindow* window, double xPos, double yPos)
