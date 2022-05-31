@@ -18,6 +18,10 @@ class Application
 public:
     bool firstMouse = true;
     bool mouseMove = false;
+    
+    bool mouseClicked = false;
+
+    glm::vec2 mousePosition;
 
     Camera camera;
 private:
@@ -49,6 +53,8 @@ private:
 
     void setupFramebuffer();
     void setupScreenVAO();
+
+    void checkMousePicked();
 
     static void mouseCallback(GLFWwindow* window, double xPos, double yPos);
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);

@@ -1,5 +1,7 @@
 #include "Application.hpp"
 
+#include <glm/gtx/string_cast.hpp>
+
 #include <iostream>
 
 Application::Application(std::string title, glm::ivec2 windowSize)
@@ -27,6 +29,8 @@ void Application::run()
         CubeManager::update(KRE::Clock::deltaTime);
 
         glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+        GLenum bufs[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+        glDrawBuffers(2, bufs);
 
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -37,8 +41,9 @@ void Application::run()
 
         CubeManager::draw(m_CubeShader);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        checkMousePicked();
 
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glDisable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -56,12 +61,15 @@ void Application::run()
         glBindVertexArray(0);
 
         glfwSwapBuffers(m_Window);
+
     }
 }
 
 void Application::init()
 {
     camera = Camera(m_WindowSize);
+
+    mousePosition = glm::vec2(0.0f);
 
     setupGLFW();
     setupOpenGL();
@@ -193,9 +201,6 @@ void Application::setupFramebuffer()
     glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_WindowSize.x, m_WindowSize.y);
 
-    GLenum bufs[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-    glDrawBuffers(2, bufs);
-
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ScreenTexture, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_PickingTexture, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
@@ -206,12 +211,40 @@ void Application::setupFramebuffer()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void Application::checkMousePicked()
+{
+    if (!mouseClicked)
+        return;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+
+    int x = mousePosition.x;
+    int y = m_WindowSize.y - mousePosition.y;
+
+    glm::vec4 pixelData(0.0f);
+    glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, glm::value_ptr(pixelData));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    int clickedFaceInt = (int)pixelData.x;
+
+    glm::ivec3 index;
+    index.x = pixelData.y;
+    index.y = pixelData.z;
+    index.z = pixelData.w;
+
+    std::cout << "Face: " << clickedFaceInt << " | Index: " << index.x << ", " << index.y << ", " << index.z << "\n";
+}
+
 void Application::mouseCallback(GLFWwindow* window, double xPos, double yPos)
 {
+    Application* app = (Application*)glfwGetWindowUserPointer(window);
+
     static float lastX = 0.0f;
     static float lastY = 0.0f;
 
-    Application* app = (Application*)glfwGetWindowUserPointer(window);
+    app->mousePosition = glm::vec2(xPos, yPos);
 
     if (!app->mouseMove)
         return;
@@ -223,7 +256,7 @@ void Application::mouseCallback(GLFWwindow* window, double xPos, double yPos)
         app->firstMouse = false;
     }
 
-    float xOffset = xPos - lastX;
+    float xOffset = xPos - lastX; 
     float yOffset = lastY - yPos;
 
     lastX = xPos;
@@ -252,6 +285,15 @@ void Application::mouseButtonCallback(GLFWwindow* window, int button, int action
             app->mouseMove = false;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        app->mouseClicked = true;
+    }
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+    {
+        app->mouseClicked = false;
     }
 }
 
