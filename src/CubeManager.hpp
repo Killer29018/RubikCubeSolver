@@ -11,6 +11,16 @@
 #include <vector>
 #include <queue>
 
+struct MousePicker
+{
+    glm::ivec3 index;
+    FaceEnum pickedFace;
+    QB* qb;
+
+    float angle;
+    glm::vec3 angleAxis;
+};
+
 class CubeManager
 {
 private:
@@ -22,6 +32,9 @@ private:
     static uint8_t s_Size;
 
     static std::queue<Move> s_Moves;
+
+    static bool s_MousePick;
+    static MousePicker s_PickedQB;
 public:
     static void generate(uint8_t size);
 
@@ -33,6 +46,10 @@ public:
     static void applyMoves(std::string input);
 
     static void doMove(Move move);
+
+    static void startMousePick(uint32_t fbo, glm::vec2 mousePosition);
+    static void mouseMove(glm::vec2 mousePosition, glm::vec2 mouseOffset);
+    static void endMousePick();
 
     static glm::ivec2 getLocalPos(glm::ivec3 pos, FaceEnum face);
     static LocalEdgeEnum getLocalEdge(glm::ivec3 pos, FaceEnum face);

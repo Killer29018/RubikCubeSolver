@@ -19,16 +19,16 @@ public:
     bool firstMouse = true;
     bool mouseMove = false;
     
-    bool mouseClicked = false;
+    bool mousePicked = false;
 
     glm::vec2 mousePosition;
+    glm::ivec2 windowSize;
 
     Camera camera;
 private:
     GLFWwindow* m_Window;
 
     std::string m_Title;
-    glm::ivec2 m_WindowSize;
 
     KRE::Shader m_CubeShader;
     KRE::Shader m_ScreenShader;
@@ -39,6 +39,8 @@ private:
     uint32_t m_RBO;
 
     uint32_t m_ScreenVAO;
+
+    bool m_PreviousMousePicked = false;
 public:
     Application(std::string title, glm::ivec2 windowSize);
     ~Application();

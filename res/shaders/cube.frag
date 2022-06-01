@@ -13,5 +13,5 @@ void main()
 {
     f_Colour = vec4(u_Colours[u_CurrentColour].rgb, 1.0);
 
-    f_MousePicker = vec4(u_QBFace, u_QBPosition);
+    f_MousePicker = ivec4(u_QBFace, u_QBPosition);
 }

@@ -11,6 +11,9 @@ uint8_t CubeManager::s_Size;
 
 std::queue<Move> CubeManager::s_Moves;
 
+bool CubeManager::s_MousePick = false;
+MousePicker CubeManager::s_PickedQB;
+
 void CubeManager::generate(uint8_t size)
 {
     s_Size = size;
@@ -193,6 +196,52 @@ void CubeManager::doMove(Move move)
 {
     rotateCurrent(move);
     s_Moves.push(move);
+}
+
+void CubeManager::startMousePick(uint32_t fbo, glm::vec2 mousePosition)
+{
+    if (s_MousePick)
+        return;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+
+    glm::vec4 pixelData(0.0f);
+    glReadPixels((int)mousePosition.x, (int)mousePosition.y, 1, 1, GL_RGBA, GL_FLOAT, glm::value_ptr(pixelData));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (pixelData.x < 0.0f)
+        return;
+
+    s_MousePick = true;
+
+    s_PickedQB.pickedFace = static_cast<FaceEnum>(pixelData.x);
+
+    glm::ivec3 index;
+    index.x = pixelData.y;
+    index.y = pixelData.z;
+    index.z = pixelData.w;
+
+    s_PickedQB.index = index;
+    s_PickedQB.qb = s_Cubies[index.z][index.y][index.x];
+}
+
+void CubeManager::mouseMove(glm::vec2 mousePosition, glm::vec2 mouseOffset)
+{
+    if (!s_MousePick)
+        return;
+
+    std::cout << "Index: " << s_PickedQB.index.x << ", " << s_PickedQB.index.y << ", " << s_PickedQB.index.z << "\n";
+}
+
+void CubeManager::endMousePick()
+{
+    if (!s_MousePick)
+        return;
+
+    s_MousePick = false;
+    s_PickedQB.angle = 0.0f;
 }
 
 glm::ivec2 CubeManager::getLocalPos(glm::ivec3 pos, FaceEnum face)
