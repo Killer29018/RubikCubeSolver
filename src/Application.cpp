@@ -1,7 +1,5 @@
 #include "Application.hpp"
 
-#include <glm/gtx/string_cast.hpp>
-
 #include <iostream>
 
 Application::Application(std::string title, glm::ivec2 windowSize)
@@ -47,8 +45,6 @@ void Application::run()
         m_CubeShader.setUniformMatrix4("u_View", camera.getViewMatrix());
 
         CubeManager::draw(m_CubeShader);
-
-        checkMousePicked();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -229,32 +225,6 @@ void Application::setupFramebuffer()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Application::checkMousePicked()
-{
-    // if (!mouseClicked)
-    //     return;
-
-    // glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
-    // glReadBuffer(GL_COLOR_ATTACHMENT1);
-
-    // int x = mousePosition.x;
-    // int y = windowSize.y - mousePosition.y;
-
-    // glm::ivec4 pixelData(0.0f);
-    // glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, glm::value_ptr(pixelData));
-
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // int clickedFaceInt = (int)pixelData.x;
-
-    // glm::ivec3 index;
-    // index.x = pixelData.y;
-    // index.y = pixelData.z;
-    // index.z = pixelData.w;
-
-    // std::cout << "Face: " << clickedFaceInt << " | Index: " << index.x << ", " << index.y << ", " << index.z << "\n";
-}
-
 void Application::mouseCallback(GLFWwindow* window, double xPos, double yPos)
 {
     Application* app = (Application*)glfwGetWindowUserPointer(window);
@@ -277,7 +247,7 @@ void Application::mouseCallback(GLFWwindow* window, double xPos, double yPos)
     lastX = xPos;
     lastY = yPos;
 
-    CubeManager::mouseMove({ xPos, app->windowSize.y - yPos }, { xOffset, yOffset });
+    CubeManager::mouseMove({ xOffset, yOffset });
 
     if (!app->mouseMove)
         return;

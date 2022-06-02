@@ -33,9 +33,9 @@ void QB::rotateCurrent(glm::ivec3 rotation, int8_t angleMult)
     m_FutureRotation = glm::angleAxis(glm::radians(angle), rotationF) * m_FutureRotation;
 }
 
-void QB::draw(KRE::Shader& shader)
+void QB::draw(KRE::Shader& shader, glm::mat4 individualRotation)
 {
-    glm::mat4 tempRotation = glm::toMat4(m_TempRotation);
+    glm::mat4 tempRotation = glm::toMat4(m_TempRotation) * individualRotation;
 
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
     glm::mat4 rotation = glm::toMat4(m_CurrentRotation);
@@ -48,21 +48,6 @@ void QB::draw(KRE::Shader& shader)
     shader.setUniformVector3("u_QBPosition", index);
 
     Face::draw(shader, activeFaces, model);
-
-    // if ((activeFaces & FaceEnum::UP) == FaceEnum::UP)
-    //     m_Faces.at(FaceEnum::UP).draw(shader);
-    // if ((activeFaces & FaceEnum::DOWN) == FaceEnum::DOWN)
-    //     m_Faces.at(FaceEnum::DOWN).draw(shader);
-    // if ((activeFaces & FaceEnum::FRONT) == FaceEnum::FRONT)
-    //     m_Faces.at(FaceEnum::FRONT).draw(shader);
-    // if ((activeFaces & FaceEnum::BACK) == FaceEnum::BACK)
-    //     m_Faces.at(FaceEnum::BACK).draw(shader);
-    // if ((activeFaces & FaceEnum::LEFT) == FaceEnum::LEFT)
-    //     m_Faces.at(FaceEnum::LEFT).draw(shader);
-    // if ((activeFaces & FaceEnum::RIGHT) == FaceEnum::RIGHT)
-    //     m_Faces.at(FaceEnum::RIGHT).draw(shader);
-
-    // InnerCube::draw(shader, model);
 }
 
 FaceEnum QB::getFacingSide(FaceEnum face)

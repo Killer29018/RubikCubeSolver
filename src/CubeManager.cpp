@@ -1,6 +1,7 @@
 #include "CubeManager.hpp"
 
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 QB**** CubeManager::s_Cubies;
 QB**** CubeManager::s_CurrentCubies;
@@ -12,7 +13,9 @@ uint8_t CubeManager::s_Size;
 std::queue<Move> CubeManager::s_Moves;
 
 bool CubeManager::s_MousePick = false;
-MousePicker CubeManager::s_PickedQB;
+MousePickerStruct CubeManager::s_PickedQB;
+
+float CubeManager::s_MovementThreshold = 30.0f;
 
 void CubeManager::generate(uint8_t size)
 {
@@ -121,13 +124,20 @@ void CubeManager::destroy()
 
 void CubeManager::draw(KRE::Shader& shader)
 {
-    for (int i = 0; i < s_Size; i++)
+    for (int i = 0; i < s_Size; i++) // z
     {
-        for (int j = 0; j < s_Size; j++)
+        for (int j = 0; j < s_Size; j++) // y
         {
-            for (int k = 0; k < s_Size; k++)
+            for (int k = 0; k < s_Size; k++) // x
             {
-                s_Cubies[i][j][k]->draw(shader);
+                glm::mat4 individualRotation(1.0f);
+
+                glm::ivec3 index(k, j, i);
+
+                if (index == s_PickedQB.index)
+                    individualRotation = glm::toMat4(glm::angleAxis(glm::radians(s_PickedQB.angle), s_PickedQB.angleAxis));
+
+                s_Cubies[i][j][k]->draw(shader, individualRotation);
             }
         }
     }
@@ -225,14 +235,69 @@ void CubeManager::startMousePick(uint32_t fbo, glm::vec2 mousePosition)
 
     s_PickedQB.index = index;
     s_PickedQB.qb = s_Cubies[index.z][index.y][index.x];
+
+    s_PickedQB.mouseOffset = glm::vec2(0.0f);
 }
 
-void CubeManager::mouseMove(glm::vec2 mousePosition, glm::vec2 mouseOffset)
+void CubeManager::mouseMove(glm::vec2 mouseOffset)
 {
     if (!s_MousePick)
         return;
 
-    std::cout << "Index: " << s_PickedQB.index.x << ", " << s_PickedQB.index.y << ", " << s_PickedQB.index.z << "\n";
+    s_PickedQB.mouseOffset += mouseOffset;
+    // std::cout << "Mouse Offset: " << glm::to_string(s_PickedQB.mouseOffset) << "\n";
+
+
+    if (std::abs(s_PickedQB.mouseOffset.x) >= s_MovementThreshold && !s_PickedQB.moving)
+    {
+        // Moved enough on the X to start moving
+        s_PickedQB.moving = true;
+        s_PickedQB.movingX = true;
+    }
+    else if (std::abs(s_PickedQB.mouseOffset.x) < s_MovementThreshold && s_PickedQB.moving && s_PickedQB.movingX)
+    {
+        // Moving on X but no longer enough
+        s_PickedQB.moving = false;
+        s_PickedQB.movingX = false;
+    }
+
+    if (std::abs(s_PickedQB.mouseOffset.y) >= s_MovementThreshold && !s_PickedQB.moving)
+    {
+        // Moved enough on Y to start Moving
+        s_PickedQB.moving = true;
+        s_PickedQB.movingX = false;
+    }
+    else if (std::abs(s_PickedQB.mouseOffset.y) < s_MovementThreshold && s_PickedQB.moving && !s_PickedQB.movingX)
+    {
+        // Moving on Y but no longer enough
+        s_PickedQB.moving = false;
+        s_PickedQB.movingX = false;
+    }
+
+    if (!s_PickedQB.moving)
+    {
+        s_PickedQB.angleAxis = glm::vec3(0.0f);
+        return;
+    }
+
+    static glm::vec3 xRotation;
+    static glm::vec3 yRotation;
+
+    MousePicker::getXYRotations(s_PickedQB.pickedFace, xRotation, yRotation);
+    float offset = 0.0f;
+
+    if (s_PickedQB.movingX)
+    {
+        s_PickedQB.angleAxis = xRotation;
+        offset = s_PickedQB.mouseOffset.x;
+    }
+    else
+    {
+        s_PickedQB.angleAxis = yRotation;
+        offset = s_PickedQB.mouseOffset.y;
+    }
+
+    s_PickedQB.angle = offset / 2.0f;
 }
 
 void CubeManager::endMousePick()

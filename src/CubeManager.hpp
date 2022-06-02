@@ -5,21 +5,12 @@
 #include "KRE/KRE.hpp"
 #include "Enums.hpp"
 #include "Solver.hpp"
+#include "MousePicker.hpp"
 
 #include "QB.hpp"
 
 #include <vector>
 #include <queue>
-
-struct MousePicker
-{
-    glm::ivec3 index;
-    FaceEnum pickedFace;
-    QB* qb;
-
-    float angle;
-    glm::vec3 angleAxis;
-};
 
 class CubeManager
 {
@@ -34,7 +25,9 @@ private:
     static std::queue<Move> s_Moves;
 
     static bool s_MousePick;
-    static MousePicker s_PickedQB;
+    static MousePickerStruct s_PickedQB;
+
+    static float s_MovementThreshold;
 public:
     static void generate(uint8_t size);
 
@@ -48,7 +41,7 @@ public:
     static void doMove(Move move);
 
     static void startMousePick(uint32_t fbo, glm::vec2 mousePosition);
-    static void mouseMove(glm::vec2 mousePosition, glm::vec2 mouseOffset);
+    static void mouseMove(glm::vec2 mouseOffset);
     static void endMousePick();
 
     static glm::ivec2 getLocalPos(glm::ivec3 pos, FaceEnum face);

@@ -2,6 +2,7 @@
 #define ENUMS_HPP
 
 #include <cstdint>
+#include <functional>
 
 enum class RotationEnum
 {
