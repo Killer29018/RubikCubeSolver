@@ -49,6 +49,8 @@ void Application::run()
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+
         glDisable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);

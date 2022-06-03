@@ -39,7 +39,7 @@ void QB::draw(KRE::Shader& shader, glm::quat customRotation)
 
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
     glm::mat4 rotation = glm::toMat4(m_CurrentRotation);
-    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.99f));
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.97f));
 
     glm::mat4 model = glm::toMat4(customRotation) * tempRotation * translation * rotation * scale;
 
