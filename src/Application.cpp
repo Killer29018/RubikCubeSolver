@@ -43,6 +43,7 @@ void Application::run()
 
         m_CubeShader.bind();
         m_CubeShader.setUniformMatrix4("u_View", camera.getViewMatrix());
+        m_CubeShader.setUniformVector3("u_ViewPos", camera.getPosition());
 
         CubeManager::draw(m_CubeShader);
 
@@ -64,7 +65,10 @@ void Application::run()
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindVertexArray(0);
 
+
         glfwSwapBuffers(m_Window);
+
+
 
         if (mousePicked && !m_PreviousMousePicked)
         {

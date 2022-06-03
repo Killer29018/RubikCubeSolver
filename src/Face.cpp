@@ -13,8 +13,6 @@ void Face::initialize()
 
 void Face::draw(KRE::Shader& shader, FaceEnum activeFaces, glm::mat4 model)
 {
-    shader.bind();
-
     shader.setUniformMatrix4("u_Model", model);
 
     glUniform4fv(glGetUniformLocation(shader.ID, "u_Colours"), 7, glm::value_ptr(faceColours[0]));
@@ -73,51 +71,51 @@ void Face::setupVAOs()
     glGenVertexArrays(6, &s_VAO[0]);
 
     float upFace[] = {
-        // Position
-        -0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
+        // Position             Normals
+        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,    0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,    0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,    0.0f, 1.0f, 0.0f,
     };
 
     float downFace[] = {
-        // Position
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
+        // Position             Normals
+        -0.5f, -0.5f, -0.5f,    0.0f, -1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, -1.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,    0.0f, -1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,    0.0f, -1.0f, 0.0f,
     };
 
     float frontFace[] = {
-        // Position
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
+        // Position             Normals
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,    0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,    0.0f, 0.0f, 1.0f,
     };
 
     float backFace[] ={
-        // Position
-        -0.5f, -0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
+        // Position             Normals
+        -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,    0.0f, 0.0f, -1.0f,
     };
 
     float leftFace[] = {
-        // Position
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f,  0.5f,
+        // Position             Normals
+        -0.5f, -0.5f, -0.5f,    -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,    -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,    -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,    -1.0f, 0.0f, 0.0f,
     };
 
     float rightFace[] = {
-        // Position
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
+        // Position             Normals
+         0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,    1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,    1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 0.0f, 0.0f,
     };
 
     setupVAO(s_VAO[static_cast<int>(FaceIndex::UP)], upFace, sizeof(upFace));
@@ -139,8 +137,10 @@ void Face::setupVAO(uint32_t vao, float* vertices, int size)
 
     glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

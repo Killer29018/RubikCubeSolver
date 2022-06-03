@@ -41,6 +41,7 @@ public:
     glm::mat4 getViewMatrix();
 
     glm::vec3 getFront() { return m_Front; }
+    glm::vec3 getPosition() { return m_Position; }
 private:
     void recalculateVectors();
 };

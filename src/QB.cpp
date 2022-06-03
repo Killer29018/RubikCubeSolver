@@ -43,8 +43,6 @@ void QB::draw(KRE::Shader& shader, glm::quat customRotation)
 
     glm::mat4 model = glm::toMat4(customRotation) * tempRotation * translation * rotation * scale;
 
-    shader.bind();
-
     shader.setUniformVector3("u_QBPosition", index);
 
     Face::draw(shader, activeFaces, model);
