@@ -78,7 +78,7 @@ glm::ivec3 QB::getFaceNormal(FaceEnum face)
 
     // Face* f = &m_Faces.at(face);
 
-    glm::vec4 newFacing = glm::vec4(Face::getFacing(face), 0.0f);
+    glm::vec4 newFacing = glm::vec4(Face::getNormal(face), 0.0f);
     newFacing = glm::rotate(m_FutureRotation, newFacing);
 
     glm::ivec3 returnVector;

@@ -18,7 +18,7 @@ public:
 
     static void draw(KRE::Shader& shader, FaceEnum activeFaces, glm::mat4 model);
 
-    static glm::ivec3 getFacing(FaceEnum facing);
+    static glm::ivec3 getNormal(FaceEnum facing);
 private:
     Face() = default;
 

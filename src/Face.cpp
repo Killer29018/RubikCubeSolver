@@ -39,7 +39,7 @@ void Face::draw(KRE::Shader& shader, FaceEnum activeFaces, glm::mat4 model)
     }
 }
 
-glm::ivec3 Face::getFacing(FaceEnum facing)
+glm::ivec3 Face::getNormal(FaceEnum facing)
 {
     switch (facing)
     {
