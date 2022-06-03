@@ -31,7 +31,7 @@ public:
     void rotate(glm::ivec3 rotation, float percentage, int8_t angleMult = 1);
     void rotateCurrent(glm::ivec3 rotation, int8_t angleMult);
 
-    void draw(KRE::Shader& shader, glm::mat4 customRotation = glm::mat4(1.0f));
+    void draw(KRE::Shader& shader, glm::quat customRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
 
     size_t getFaceCount() { return m_FaceCount; }
     bool hasFace(FaceEnum face) { return (activeFaces & face) == face; }

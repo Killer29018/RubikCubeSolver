@@ -123,15 +123,37 @@ void MousePicker::endPicking()
 
     if (angleMult == -1 || angleMult == 3)
         rotation = RotationEnum::PRIME;
+    else if (angleMult == 1)
+        rotation = RotationEnum::NORMAL;
     else if (angleMult == 2)
         rotation = RotationEnum::TWICE;
 
+    glm::ivec3 facing = getClosestXYAxis(s_Camera->getFront());
+
+    switch (slice)
+    {
+    case FaceEnum::UP:
+        rotation = reverseRotation(rotation);
+        break;
+    case FaceEnum::RIGHT:
+        break;
+    case FaceEnum::FRONT:
+        rotation = reverseRotation(rotation);
+        break;
+    }
+
+    if (facing == glm::ivec3(0, 0, 1) || facing == glm::ivec3(1, 0, 0))
+    {
+        rotation = reverseRotation(rotation);
+    }
+
     Move move = Move(slice, rotation, sliceIndex);
     move.time = 1.0f;
-    std::cout << "Time: " << move.time << "\n";
     CubeManager::doMove(move);
 
     s_MousePickEnabled = false;
+    pickedObject.moving = false;
+    pickedObject.movingX = false;
     pickedObject.angle = 0.0f;
 }
 
@@ -140,9 +162,10 @@ void MousePicker::getXYRotations(FaceEnum face, glm::vec3& xRotation, glm::vec3&
     glm::ivec3 frontVector = getClosestXYAxis(s_Camera->getFront());
     glm::ivec3 rightVector = getClosestXYAxis(glm::cross(glm::vec3(frontVector), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-    glm::ivec3 faceNormal = Face::getNormal(face);
+    FaceEnum currentFace = pickedObject.qb->getFacingSide(face);
+    glm::ivec3 faceNormal = pickedObject.qb->getFaceNormal(face);
 
-    switch (face)
+    switch (currentFace)
     {
     case FaceEnum::UP:
         xRotation = -getClosestAxis(glm::cross(glm::vec3(rightVector), glm::vec3(faceNormal)));
@@ -173,7 +196,7 @@ void MousePicker::getXYRotations(FaceEnum face, glm::vec3& xRotation, glm::vec3&
 
 bool MousePicker::qbPartOfSlice(glm::ivec3 index)
 {
-    if (!pickedObject.moving)
+    if (!pickedObject.moving || !s_MousePickEnabled)
         return false;
 
     FaceEnum slice = getPickedSliceFace();
@@ -237,11 +260,20 @@ glm::ivec3 MousePicker::getClosestXYAxis(glm::vec3 vector)
 
 FaceEnum MousePicker::getPickedSliceFace()
 {
-    switch (pickedObject.pickedFace)
+    FaceEnum sliceFace = pickedObject.qb->getFacingSide(pickedObject.pickedFace);
+
+    switch (sliceFace)
     {
     case FaceEnum::UP:
     case FaceEnum::DOWN:
-        return (pickedObject.movingX) ? FaceEnum::FRONT : FaceEnum::RIGHT;
+        {
+            glm::ivec3 front = getClosestXYAxis(s_Camera->getFront());
+            if (front == glm::ivec3(1, 0, 0) || front == glm::ivec3(-1, 0, 0)) // Facing left or right face
+            {
+                return (!pickedObject.movingX) ? FaceEnum::FRONT : FaceEnum::RIGHT;
+            }
+            return (pickedObject.movingX) ? FaceEnum::FRONT : FaceEnum::RIGHT;
+        }
 
     case FaceEnum::LEFT:
     case FaceEnum::RIGHT:

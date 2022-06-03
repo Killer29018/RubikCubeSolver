@@ -127,12 +127,12 @@ void CubeManager::draw(KRE::Shader& shader)
         {
             for (int k = 0; k < s_Size; k++) // x
             {
-                glm::mat4 customRotation(1.0f);
+                glm::quat customRotation(1.0f, 0.0f, 0.0f, 0.0f);
 
                 glm::ivec3 index(k, j, i);
 
                 if (MousePicker::qbPartOfSlice(index))
-                    customRotation = glm::toMat4(glm::angleAxis(glm::radians(MousePicker::pickedObject.angle), MousePicker::pickedObject.angleAxis));
+                    customRotation = glm::angleAxis(glm::radians(MousePicker::pickedObject.angle), MousePicker::pickedObject.angleAxis);
 
                 s_Cubies[i][j][k]->draw(shader, customRotation);
             }

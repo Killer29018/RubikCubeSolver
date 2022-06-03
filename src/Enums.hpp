@@ -78,6 +78,21 @@ struct Move
     Move(FaceEnum face, RotationEnum rotation, uint8_t slice, SliceMode mode = SliceMode::SINGLE) : face(face), rotation(rotation), slice(slice), sliceMode(mode) {}
 };
 
+inline RotationEnum reverseRotation(RotationEnum rotation)
+{
+    switch (rotation)
+    {
+    case RotationEnum::NONE:
+    case RotationEnum::TWICE:
+        return rotation;
+
+    case RotationEnum::PRIME:
+        return RotationEnum::NORMAL;
+    case RotationEnum::NORMAL:
+        return RotationEnum::PRIME;
+    }
+}
+
 namespace std
 {
     template<>

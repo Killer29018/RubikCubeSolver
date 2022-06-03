@@ -33,15 +33,15 @@ void QB::rotateCurrent(glm::ivec3 rotation, int8_t angleMult)
     m_FutureRotation = glm::angleAxis(glm::radians(angle), rotationF) * m_FutureRotation;
 }
 
-void QB::draw(KRE::Shader& shader, glm::mat4 customRotation)
+void QB::draw(KRE::Shader& shader, glm::quat customRotation)
 {
-    glm::mat4 tempRotation = glm::toMat4(m_TempRotation) * customRotation;
+    glm::mat4 tempRotation = glm::toMat4(m_TempRotation);
 
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
     glm::mat4 rotation = glm::toMat4(m_CurrentRotation);
     glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.99f));
 
-    glm::mat4 model = tempRotation * translation * rotation * scale;
+    glm::mat4 model = glm::toMat4(customRotation) * tempRotation * translation * rotation * scale;
 
     shader.bind();
 
