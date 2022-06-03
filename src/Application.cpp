@@ -68,11 +68,12 @@ void Application::run()
 
         if (mousePicked && !m_PreviousMousePicked)
         {
-            CubeManager::startMousePick(m_FBO, { mousePosition.x, windowSize.y - mousePosition.y });
+            // CubeManager::startMousePick(m_FBO, { mousePosition.x, windowSize.y - mousePosition.y });
+            MousePicker::startPicking(m_FBO, { mousePosition.x, windowSize.y - mousePosition.y });
         }
         else if (!mousePicked && m_PreviousMousePicked)
         {
-            CubeManager::endMousePick();
+            MousePicker::endPicking();
         }
 
         m_PreviousMousePicked = mousePicked;
@@ -108,7 +109,7 @@ void Application::init()
     CubeManager::generate(3);
     Move::seconds = 0.1f;
 
-    MousePicker::init(&camera, CubeManager::getCubies());
+    MousePicker::init(&camera, CubeManager::getCubies(), 3);
 }
 
 void Application::setupGLFW()
@@ -251,10 +252,7 @@ void Application::mouseCallback(GLFWwindow* window, double xPos, double yPos)
 
     glm::vec4 mouseOffset(xOffset, yOffset, 0.0f, 1.0f);
 
-    // glm::mat4 inverseView = glm::inverse(app->camera.getViewMatrix());
-    // mouseOffset = mouseOffset * app->camera.getViewMatrix();
-    // std::cout << "X: " << xOffset << " Y: " << yOffset << " nX: " << mouseOffset.x << " nY: " << mouseOffset.y << "\n";
-    CubeManager::mouseMove({ mouseOffset.x, mouseOffset.y });
+    MousePicker::mouseMoved({ mouseOffset.x, mouseOffset.y });
 
     if (!app->mouseMove)
         return;
