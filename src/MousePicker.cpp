@@ -32,7 +32,7 @@ void MousePicker::startPicking(uint32_t fbo, glm::vec2 mousePosition)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    if (pixelData.x < 0.0f)
+    if (pixelData.x < 0.0f || pixelData.y < 0.0f)
         return;
 
     s_MousePickEnabled = true;

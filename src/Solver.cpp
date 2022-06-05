@@ -43,7 +43,21 @@ void Solver::alignCenters()
         switch(facing)
         {
         case FaceEnum::DOWN:
-            CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::TWICE, 1 }); break;
+            {
+                std::vector<QB*> leftCenter = findQB(FaceEnum::LEFT, QBTypeEnum::CENTER);
+
+                FaceEnum leftFacing = leftCenter[0]->getFacingSide(FaceEnum::LEFT);
+
+                if (leftFacing == FaceEnum::LEFT)
+                {
+                    CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::TWICE, 1 });
+                }
+                else
+                {
+                    CubeManager::doMove({ FaceEnum::FRONT, RotationEnum::TWICE, 1 });
+                }
+                break;
+            }
 
         case FaceEnum::RIGHT:
             CubeManager::doMove({ FaceEnum::FRONT, RotationEnum::PRIME, 1 }); break;
