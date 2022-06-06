@@ -111,7 +111,7 @@ void Application::init()
     m_ScreenShader.bind();
     m_ScreenShader.setUniformInt("u_ScreenTexture", 0);
 
-    CubeManager::generate(3);
+    CubeManager::generate(2);
     Move::seconds = 0.1f;
 
     MousePicker::init(&camera, CubeManager::getCubies(), 3);

@@ -14,17 +14,23 @@ void Solver::loadCube(QB**** cubies, uint16_t size)
 
 void Solver::solve()
 {
-    alignCenters();
+    if (s_Size > 2)
+    {
+        alignCenters();
 
-    solveCross();
+        solveCross();
+    }
 
     solveCorners();
 
-    solveMiddleLayer();
+    if (s_Size > 2)
+    {
+        solveMiddleLayer();
 
-    solveBottomCross();
+        solveBottomCross();
 
-    alignBottomCross();
+        alignBottomCross();
+    }
 
     positionBottomCorners();
 
@@ -695,6 +701,12 @@ void Solver::positionBottomCorners()
             continue;
         }
 
+        if (wrongCorners.size() == 2)
+        {
+            // Only possible on 2x2 Cube
+            return;
+        }
+
         if (wrongCorners.size() == 3 && correctCorner) // Only One corner is correct
         {
             LocalCornerEnum currentCorner = CubeManager::getLocalCorner(correctCorner->index, face);
@@ -745,11 +757,30 @@ void Solver::reorientateBottomCorners()
         }
     }
 
-    std::vector<QB*> bottomEdges = findQB(face, QBTypeEnum::EDGE);
+    QB* chosen;
+    FaceEnum chosenFace;
 
-    QB* chosen = bottomEdges[0];
+    if (s_Size > 2)
+    {
+        std::vector<QB*> bottomEdges = findQB(face, QBTypeEnum::EDGE);
 
-    FaceEnum chosenFace = getOtherFace(chosen, face);
+        chosen = bottomEdges[0];
+
+        chosenFace = getOtherFace(chosen, face);
+    }
+    else
+    {
+        std::vector<QB*> bottomCorners = findQB(face, QBTypeEnum::CORNER);
+
+        chosen = bottomCorners[0];
+
+        FaceEnum otherFaces = static_cast<FaceEnum>(static_cast<int>(chosen->activeFaces) & ~static_cast<int>(FaceEnum::DOWN));
+
+        std::array<FaceEnum, 2> chosenFaces = convertDualFaceToFaces(otherFaces);
+
+        chosenFace = chosenFaces[0];
+    }
+
     FaceEnum facing = chosen->getFacingSide(chosenFace);
 
     if (facing != chosenFace) // Final layer not oriented correctly

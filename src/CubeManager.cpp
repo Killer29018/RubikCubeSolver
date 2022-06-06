@@ -18,7 +18,7 @@ void CubeManager::generate(uint8_t size)
 {
     s_Size = size;
 
-    assert(s_Size == 3 && "Only a 3x3 Cube is currently supported");
+    assert(s_Size >= 2 && "Only a 3x3 or 2x2 Cube is currently supported");
 
     s_Cubies = new QB***[s_Size];
     s_CurrentCubies = new QB***[s_Size];
@@ -493,7 +493,7 @@ void CubeManager::swapCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationA
         for (size_t i = 0; i < s_SwapIndices.size() - s_Size + 1; i++)
         {
             currentPos = s_SwapIndices.at(i);
-            nextPos = s_SwapIndices.at(i + 2);
+            nextPos = s_SwapIndices.at(i + s_Size - 1);
 
             currentIndex = getCurrentIndex(constant, rotationAxis, currentPos);
             nextIndex = getCurrentIndex(constant, rotationAxis, nextPos);
@@ -545,8 +545,11 @@ void CubeManager::swapCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationA
 
         if (!completed && animate)
         {
-            currentIndex = getCurrentIndex(constant, rotationAxis, { 1, 1 });
-            (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+            if (s_Size > 2)
+            {
+                currentIndex = getCurrentIndex(constant, rotationAxis, { 1, 1 });
+                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+            }
         }
         completed = true;
     }
@@ -566,7 +569,7 @@ void CubeManager::swapCCW(QB***** cubies, uint16_t constant, glm::ivec3 rotation
         for (size_t i = s_SwapIndices.size() - 1; i >= (size_t)(s_Size - 1); i--)
         {
             currentPos = s_SwapIndices.at(i);
-            nextPos = s_SwapIndices.at(i - 2);
+            nextPos = s_SwapIndices.at(i - s_Size + 1);
 
             currentIndex = getCurrentIndex(constant, rotationAxis, currentPos);
             nextIndex = getCurrentIndex(constant, rotationAxis, nextPos);
@@ -618,8 +621,11 @@ void CubeManager::swapCCW(QB***** cubies, uint16_t constant, glm::ivec3 rotation
 
         if (!completed && animate)
         {
-            currentIndex = getCurrentIndex(constant, rotationAxis, { 1, 1 });
-            (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+            if (s_Size > 2)
+            {
+                currentIndex = getCurrentIndex(constant, rotationAxis, { 1, 1 });
+                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+            }
         }
         completed = true;
     }
