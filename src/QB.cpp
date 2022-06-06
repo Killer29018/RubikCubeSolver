@@ -66,7 +66,7 @@ FaceEnum QB::getFacingSide(FaceEnum face)
         return FaceEnum::BACK;
 
     else
-        return static_cast<FaceEnum>(0);
+        return FaceEnum::NONE;
 }
 
 glm::ivec3 QB::getFaceNormal(FaceEnum face)

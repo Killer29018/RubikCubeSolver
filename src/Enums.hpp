@@ -24,6 +24,7 @@ enum class FaceIndex : uint16_t
 
 enum class FaceEnum : uint8_t
 {
+    NONE    = 0,
     FRONT   = 1 << 0, // 1
     RIGHT   = 1 << 1, // 2
     BACK    = 1 << 2, // 4
@@ -91,6 +92,8 @@ inline RotationEnum reverseRotation(RotationEnum rotation)
     case RotationEnum::NORMAL:
         return RotationEnum::PRIME;
     }
+
+    return RotationEnum::NONE;
 }
 
 namespace std

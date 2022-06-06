@@ -236,6 +236,9 @@ glm::ivec2 CubeManager::getLocalPos(glm::ivec3 pos, FaceEnum face)
         localPos.x = s_Size - 1 - pos.x;
         localPos.y = pos.y;
         break;
+
+    default:
+        assert(false && "Not possible");
     }
 
     return localPos;
@@ -317,7 +320,7 @@ LocalCornerEnum CubeManager::getLocalCorner(glm::ivec3 pos, FaceEnum face)
             return LocalCornerEnum::TOP_RIGHT;
 
     default:
-        assert(false && "Impossible");
+        assert(false && "Not possible");
     }
 }
 
@@ -464,6 +467,9 @@ void CubeManager::rotate(QB***** cubies, Move& move, float dt, bool animate)
                 else
                     swapCW(cubies, position, rotationAxis, percentage, rotationInt, animate);
                 break;
+
+            default:
+                assert(false && "Not possible");
         }
     }
 

@@ -3,6 +3,8 @@
 #include <glm/gtx/string_cast.hpp>
 #include "CubeManager.hpp"
 
+#include <cmath>
+
 MousePickerStruct MousePicker::pickedObject;
 float MousePicker::movementThreshold = 30.0f;
 
@@ -89,8 +91,8 @@ void MousePicker::mouseMoved(glm::vec2 mouseOffset)
         return;
     }
 
-    static glm::vec3 xRotation;
-    static glm::vec3 yRotation;
+    static glm::vec3 xRotation(0.0f);
+    static glm::vec3 yRotation(0.0f);
 
     getXYRotations(pickedObject.pickedFace, xRotation, yRotation);
     float offset = 0.0f;
@@ -115,6 +117,13 @@ void MousePicker::endPicking()
         return;
 
     FaceEnum slice = getPickedSliceFace();
+
+    if (slice == FaceEnum::NONE)
+    {
+        s_MousePickEnabled = false;
+        return;
+    }
+
     int sliceIndex = getPickedSliceIndex();
 
     int angleMult = (int)std::round(std::fmod(pickedObject.angle, 360.0f) / 90.0f);
@@ -140,6 +149,8 @@ void MousePicker::endPicking()
     case FaceEnum::FRONT:
         rotation = reverseRotation(rotation);
         break;
+    default:
+        assert(false && "Not possible");
     }
 
     if (facing == glm::ivec3(0, 0, 1) || facing == glm::ivec3(1, 0, 0))
@@ -159,6 +170,9 @@ void MousePicker::endPicking()
 
 void MousePicker::getXYRotations(FaceEnum face, glm::vec3& xRotation, glm::vec3& yRotation)
 {
+    xRotation = glm::vec3(0.0f);
+    yRotation = glm::vec3(0.0f);
+
     glm::ivec3 frontVector = getClosestXYAxis(s_Camera->getFront());
     glm::ivec3 rightVector = getClosestXYAxis(glm::cross(glm::vec3(frontVector), glm::vec3(0.0f, 1.0f, 0.0f)));
 
@@ -214,7 +228,6 @@ bool MousePicker::qbPartOfSlice(glm::ivec3 index)
         break;
 
     default:
-        assert(false && "Not possible");
         return false;
     }
 }
@@ -250,11 +263,13 @@ glm::ivec3 MousePicker::getClosestXYAxis(glm::vec3 vector)
 
     if (absX > absZ)
     {
-        return glm::ivec3((1.0f / vector.x) * absX, 0, 0);
+        int newValue = (int)std::roundf((1.0f / vector.x) * (float)absX);
+        return glm::ivec3(newValue, 0, 0);
     }
     else
     {
-        return glm::ivec3(0, 0, (1.0f / vector.z) * absZ);
+        int newValue = (int)std::roundf((1.0f / vector.z) * (float)absZ);
+        return glm::ivec3(0, 0, newValue);
     }
 }
 
@@ -282,6 +297,9 @@ FaceEnum MousePicker::getPickedSliceFace()
     case FaceEnum::FRONT:
     case FaceEnum::BACK:
         return (pickedObject.movingX) ? FaceEnum::UP : FaceEnum::RIGHT;
+
+    default:
+        return FaceEnum::NONE;
     }
 }
 
@@ -299,5 +317,6 @@ int MousePicker::getPickedSliceIndex()
 
     default:
         assert(false && "Not possible");
+        return -1;
     }
 }

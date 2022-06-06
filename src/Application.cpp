@@ -71,7 +71,6 @@ void Application::run()
         glfwSwapBuffers(m_Window);
 
 
-
         if (mousePicked && !m_PreviousMousePicked)
         {
             // CubeManager::startMousePick(m_FBO, { mousePosition.x, windowSize.y - mousePosition.y });
@@ -113,7 +112,7 @@ void Application::init()
     m_ScreenShader.setUniformInt("u_ScreenTexture", 0);
 
     CubeManager::generate(3);
-    Move::seconds = 0.5f;
+    Move::seconds = 0.1f;
 
     MousePicker::init(&camera, CubeManager::getCubies(), 3);
 }

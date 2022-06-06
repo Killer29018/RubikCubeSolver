@@ -68,6 +68,9 @@ void Solver::alignCenters()
             CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::NORMAL, 1 }); break;
         case FaceEnum::BACK:
             CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::PRIME, 1 }); break;
+
+        default:
+            assert(false && "Not possible");
         }
     }
 
@@ -87,6 +90,9 @@ void Solver::alignCenters()
             CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME, 1 }); break;
         case FaceEnum::LEFT:
             CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL, 1 }); break;
+
+        default:
+            assert(false && "Not possible");
         }
     }
 }
@@ -734,7 +740,8 @@ void Solver::reorientateBottomCorners()
             while (current->getFacingSide(face) != face)
                 CubeManager::applyMoves(moves);
 
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            if (i != bottomCorners.size() - 1) // Stop rotation when not needed
+                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
         }
     }
 
