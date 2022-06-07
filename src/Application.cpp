@@ -111,10 +111,10 @@ void Application::init()
     m_ScreenShader.bind();
     m_ScreenShader.setUniformInt("u_ScreenTexture", 0);
 
-    CubeManager::generate(2);
+    CubeManager::generate(size);
     Move::seconds = 0.1f;
 
-    MousePicker::init(&camera, CubeManager::getCubies(), 3);
+    MousePicker::init(&camera, CubeManager::getCubies(), size);
 }
 
 void Application::setupGLFW()
@@ -314,7 +314,7 @@ void Application::keyCallback(GLFWwindow* window, int key, int scancode, int act
         // CubeManager::applyMoves("M2 E2 S2");
         CubeManager::applyMoves("r2 R2 u2 U2 b2 B2");
     if (key == GLFW_KEY_Z && action == GLFW_PRESS)
-        CubeManager::applyMoves("D L2 R2 U' B2 D L2 F2 L2 U2 B' R F' U R F D2 R F2 R' U'");
+        CubeManager::applyMoves("U' F' R2 F R' F' U F' R'");
     if (key == GLFW_KEY_V && action == GLFW_PRESS)
         Solver::solve();
     if (key == GLFW_KEY_R && action == GLFW_PRESS)

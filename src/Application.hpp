@@ -16,6 +16,8 @@
 class Application
 {
 public:
+    const uint16_t size = 2;
+
     bool firstMouse = true;
     bool mouseMove = false;
     

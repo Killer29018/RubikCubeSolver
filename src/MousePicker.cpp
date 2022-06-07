@@ -306,7 +306,6 @@ FaceEnum MousePicker::getPickedSliceFace()
 int MousePicker::getPickedSliceIndex()
 {
     FaceEnum slice = getPickedSliceFace();
-    std::cout << static_cast<int>(slice) << "\n";
     switch (slice)
     {
     case FaceEnum::UP:

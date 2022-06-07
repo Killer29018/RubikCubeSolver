@@ -41,6 +41,8 @@ private:
     static FaceEnum convertIntToFace(int faceInt);
 
     static bool cornerInCorrectPosition(QB* corner);
+    static bool cornerInDiagonalPosition(FaceEnum face, QB* corner1, QB* corner2);
+    static bool cornerInAdjacentPosition(FaceEnum face, QB* corner1, QB* corner2);
 
     static std::array<FaceEnum, 2> convertDualFaceToFaces(FaceEnum faces);
 

@@ -704,7 +704,41 @@ void Solver::positionBottomCorners()
         if (wrongCorners.size() == 2)
         {
             // Only possible on 2x2 Cube
-            return;
+            bool diagonal = cornerInDiagonalPosition(face, wrongCorners[0], wrongCorners[1]);
+
+            if (diagonal)
+            {
+                // Swap DFR and DBL
+                std::string moves = "F' R' D R D R' D' R F R' D' R D R F' R' F";
+
+                // Direction does not matter
+                CubeManager::applyMoves(moves);
+            }
+            else
+            {
+                // Swap DFR and DBR
+                std::string moves = "R' D' R D R F' R2 D R D R' D' R F";
+
+                LocalCornerEnum corner1 = CubeManager::getLocalCorner(wrongCorners[0]->index, face);
+                LocalCornerEnum corner2 = CubeManager::getLocalCorner(wrongCorners[1]->index, face);
+
+                RotationEnum rotation = RotationEnum::NONE;
+                if (corner1 == LocalCornerEnum::BOTTOM_LEFT && corner2 == LocalCornerEnum::TOP_LEFT)
+                {
+                    // Already aligned
+                    CubeManager::applyMoves(moves);
+                    continue;
+                }
+                else if (corner1 == LocalCornerEnum::BOTTOM_LEFT || corner2 == LocalCornerEnum::BOTTOM_LEFT)
+                    rotation = RotationEnum::NORMAL;
+                else if (corner1 == LocalCornerEnum::TOP_LEFT || corner2 == LocalCornerEnum::TOP_LEFT)
+                    rotation = RotationEnum::PRIME;
+                else
+                    rotation = RotationEnum::TWICE;
+
+                CubeManager::doMove({ FaceEnum::DOWN, rotation });
+                CubeManager::applyMoves(moves);
+            }
         }
 
         if (wrongCorners.size() == 3 && correctCorner) // Only One corner is correct
@@ -944,6 +978,40 @@ bool Solver::cornerInCorrectPosition(QB* corner)
     }
 
     return (correctPosition == pos);
+}
+
+bool Solver::cornerInDiagonalPosition(FaceEnum face, QB* corner1, QB* corner2)
+{
+    LocalCornerEnum corner1Enum = CubeManager::getLocalCorner(corner1->index, face);
+    LocalCornerEnum corner2Enum = CubeManager::getLocalCorner(corner2->index, face);
+
+    int intCorner1 = static_cast<int>(corner1Enum);
+    int intCorner2 = static_cast<int>(corner2Enum);
+
+    int difference = std::abs(intCorner1 - intCorner2);
+
+    if (difference == 0)
+        return false;
+
+    if (difference == 2)
+        return false;
+
+    return true;
+}
+
+bool Solver::cornerInAdjacentPosition(FaceEnum face, QB* corner1, QB* corner2)
+{
+    LocalCornerEnum corner1Enum = CubeManager::getLocalCorner(corner1->index, face);
+    LocalCornerEnum corner2Enum = CubeManager::getLocalCorner(corner2->index, face);
+
+    int intCorner1 = static_cast<int>(corner1Enum);
+    int intCorner2 = static_cast<int>(corner2Enum);
+
+    if (std::abs(intCorner1 - intCorner2) == 2)
+    {
+        return true;
+    }
+    return false;
 }
 
 std::array<FaceEnum, 2> Solver::convertDualFaceToFaces(FaceEnum corner)
