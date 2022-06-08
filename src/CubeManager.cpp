@@ -18,7 +18,7 @@ void CubeManager::generate(uint8_t size)
 {
     s_Size = size;
 
-    assert(s_Size >= 2 && "Only a 3x3 or 2x2 Cube is currently supported");
+    assert(s_Size >= 2  && s_Size <= 3 && "Only a 3x3 or 2x2 Cube is currently supported");
 
     s_Cubies = new QB***[s_Size];
     s_CurrentCubies = new QB***[s_Size];
@@ -113,10 +113,15 @@ void CubeManager::destroy()
                 delete s_Cubies[i][j][k];
             }
             delete[] s_Cubies[i][j];
+            delete[] s_CurrentCubies[i][j];
         }
         delete[] s_Cubies[i];
+        delete[] s_CurrentCubies[i];
     }
     delete[] s_Cubies;
+    delete[] s_CurrentCubies;
+
+    s_SwapIndices.clear();
 }
 
 void CubeManager::draw(KRE::Shader& shader)

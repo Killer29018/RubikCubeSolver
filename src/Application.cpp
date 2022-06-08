@@ -30,15 +30,18 @@ void Application::run()
         glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
         constexpr GLenum bufs[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 
+        // Both Buffers
         glDrawBuffers(2, bufs);
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
+        // Just Picker Buffer
         glDrawBuffer(GL_COLOR_ATTACHMENT1);
         glClearColor(-1.0f, -1.0f, -1.0f, -1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Both Buffers
         glDrawBuffers(2, bufs);
 
         m_CubeShader.bind();
@@ -50,7 +53,7 @@ void Application::run()
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-
+        // Draw Main buffer to screen
         glDisable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -68,6 +71,7 @@ void Application::run()
         glBindVertexArray(0);
 
 
+        // Imgui Rendering
         ImguiWindowManager::preRender();
         ImguiWindowManager::render();
         ImguiWindowManager::postRender();
@@ -76,9 +80,9 @@ void Application::run()
         glfwSwapBuffers(m_Window);
 
 
+        // Mouse Picking
         if (mousePicked && !m_PreviousMousePicked)
         {
-            // CubeManager::startMousePick(m_FBO, { mousePosition.x, windowSize.y - mousePosition.y });
             MousePicker::startPicking(m_FBO, { mousePosition.x, windowSize.y - mousePosition.y });
         }
         else if (!mousePicked && m_PreviousMousePicked)
@@ -88,6 +92,15 @@ void Application::run()
 
         m_PreviousMousePicked = mousePicked;
     }
+}
+
+void Application::changeSize(uint16_t newSize)
+{
+    m_CubeSize = newSize;
+    CubeManager::destroy();
+    CubeManager::generate(m_CubeSize);
+
+    MousePicker::init(&camera, CubeManager::getCubies(), m_CubeSize);
 }
 
 void Application::init()
@@ -101,7 +114,10 @@ void Application::init()
     setupFramebuffer();
     setupScreenVAO();
 
+    m_SettingsWindow = SettingsWindow(this, m_CubeSize);
+
     ImguiWindowManager::init(m_Window);
+    ImguiWindowManager::addWindow(&m_SettingsWindow);
 
     Face::initialize();
 
@@ -118,10 +134,10 @@ void Application::init()
     m_ScreenShader.bind();
     m_ScreenShader.setUniformInt("u_ScreenTexture", 0);
 
-    CubeManager::generate(size);
+    CubeManager::generate(m_CubeSize);
     Move::seconds = 0.1f;
 
-    MousePicker::init(&camera, CubeManager::getCubies(), size);
+    MousePicker::init(&camera, CubeManager::getCubies(), m_CubeSize);
 }
 
 void Application::setupGLFW()

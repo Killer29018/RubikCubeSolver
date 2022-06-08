@@ -14,11 +14,11 @@
 #include "Solver.hpp"
 
 #include "imgui/WindowManager.hpp"
+#include "imgui/SettingsWindow.hpp"
 
 class Application
 {
 public:
-    const uint16_t size = 3;
 
     bool firstMouse = true;
     bool mouseMove = false;
@@ -34,6 +34,8 @@ private:
 
     std::string m_Title;
 
+    uint16_t m_CubeSize = 3;
+
     KRE::Shader m_CubeShader;
     KRE::Shader m_ScreenShader;
 
@@ -45,12 +47,15 @@ private:
     uint32_t m_ScreenVAO;
 
     bool m_PreviousMousePicked = false;
+
+    SettingsWindow m_SettingsWindow;
 public:
     Application(std::string title, glm::ivec2 windowSize);
     ~Application();
 
     void run();
 
+    void changeSize(uint16_t newSize);
 private:
     void init();
 
