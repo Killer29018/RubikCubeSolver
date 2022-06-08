@@ -11,3 +11,7 @@
 [submodule "vendor/KRE"]
 	path = vendor/KRE
 	url = https://github.com/killer29018/KillerRenderEngine.git
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/Killer29018/imgui-opengl-glfw
+	branch = docking
