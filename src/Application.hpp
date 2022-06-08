@@ -13,10 +13,12 @@
 #include "CubeManager.hpp"
 #include "Solver.hpp"
 
+#include "imgui/WindowManager.hpp"
+
 class Application
 {
 public:
-    const uint16_t size = 2;
+    const uint16_t size = 3;
 
     bool firstMouse = true;
     bool mouseMove = false;

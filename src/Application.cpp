@@ -68,6 +68,11 @@ void Application::run()
         glBindVertexArray(0);
 
 
+        ImguiWindowManager::preRender();
+        ImguiWindowManager::render();
+        ImguiWindowManager::postRender();
+
+
         glfwSwapBuffers(m_Window);
 
 
@@ -95,6 +100,8 @@ void Application::init()
     setupOpenGL();
     setupFramebuffer();
     setupScreenVAO();
+
+    ImguiWindowManager::init(m_Window);
 
     Face::initialize();
 

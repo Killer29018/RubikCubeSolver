@@ -5,6 +5,8 @@
 
 #include <cmath>
 
+#include <imgui.h>
+
 MousePickerStruct MousePicker::pickedObject;
 float MousePicker::movementThreshold = 30.0f;
 
@@ -23,7 +25,7 @@ void MousePicker::init(Camera* camera, QB**** cubies, uint16_t size)
 
 void MousePicker::startPicking(uint32_t fbo, glm::vec2 mousePosition)
 {
-    if (s_MousePickEnabled)
+    if (s_MousePickEnabled || ImGui::GetIO().WantCaptureMouse)
         return;
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
