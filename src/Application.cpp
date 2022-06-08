@@ -2,13 +2,34 @@
 
 #include <iostream>
 
-Application::Application(std::string title, glm::ivec2 windowSize)
-{
-    m_Title = title;
-    this->windowSize = windowSize;
+bool Application::firstMouse = true;
+bool Application::mouseMove = false;
 
-    init();
-}
+bool Application::mousePicked = false;
+
+glm::vec2 Application::mousePosition;
+glm::ivec2 Application::windowSize;
+
+Camera Application::camera;
+GLFWwindow* Application::s_Window;
+
+std::string Application::s_Title;
+
+uint16_t Application::s_CubeSize = 3;
+
+KRE::Shader Application::s_CubeShader;
+KRE::Shader Application::s_ScreenShader;
+
+uint32_t Application::s_FBO;
+uint32_t Application::s_ScreenTexture;
+uint32_t Application::s_PickingTexture;
+uint32_t Application::s_RBO;
+
+uint32_t Application::s_ScreenVAO;
+
+bool Application::s_PreviousMousePicked = false;
+
+SettingsWindow Application::s_SettingsWindow;
 
 Application::~Application()
 {
@@ -16,9 +37,49 @@ Application::~Application()
     glfwTerminate();
 }
 
+void Application::init(std::string title, glm::ivec2 windowSize)
+{
+    s_Title = title;
+    Application::windowSize = windowSize;
+
+    camera = Camera(windowSize);
+
+    mousePosition = glm::vec2(0.0f);
+
+    setupGLFW();
+    setupOpenGL();
+    setupFramebuffer();
+    setupScreenVAO();
+
+    s_SettingsWindow = SettingsWindow(s_CubeSize);
+
+    ImguiWindowManager::init(s_Window);
+    ImguiWindowManager::addWindow(&s_SettingsWindow);
+
+    Face::initialize();
+
+    camera.setAngle(45.0f, 45.0f);
+    camera.distance = 3.0f;
+
+    s_CubeShader.compilePath("res/shaders/cube.vert", "res/shaders/cube.frag");
+
+    s_ScreenShader.compilePath("res/shaders/screen.vert", "res/shaders/screen.frag");
+
+    s_CubeShader.bind();
+    s_CubeShader.setUniformMatrix4("u_Projection", camera.getProjectionMatrix());
+
+    s_ScreenShader.bind();
+    s_ScreenShader.setUniformInt("u_ScreenTexture", 0);
+
+    CubeManager::generate(s_CubeSize);
+    Move::seconds = 0.1f;
+
+    MousePicker::init(&camera, CubeManager::getCubies(), s_CubeSize);
+}
+
 void Application::run()
 {
-    while (!glfwWindowShouldClose(m_Window))
+    while (!glfwWindowShouldClose(s_Window))
     {
         KRE::Clock::tick();
 
@@ -27,7 +88,7 @@ void Application::run()
         CubeManager::update(KRE::Clock::deltaTime);
 
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, s_FBO);
         constexpr GLenum bufs[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 
         // Both Buffers
@@ -44,11 +105,11 @@ void Application::run()
         // Both Buffers
         glDrawBuffers(2, bufs);
 
-        m_CubeShader.bind();
-        m_CubeShader.setUniformMatrix4("u_View", camera.getViewMatrix());
-        m_CubeShader.setUniformVector3("u_ViewPos", camera.getPosition());
+        s_CubeShader.bind();
+        s_CubeShader.setUniformMatrix4("u_View", camera.getViewMatrix());
+        s_CubeShader.setUniformVector3("u_ViewPos", camera.getPosition());
 
-        CubeManager::draw(m_CubeShader);
+        CubeManager::draw(s_CubeShader);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -58,12 +119,12 @@ void Application::run()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        m_ScreenShader.bind();
-        glBindVertexArray(m_ScreenVAO);
+        s_ScreenShader.bind();
+        glBindVertexArray(s_ScreenVAO);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_ScreenTexture);
-        // glBindTexture(GL_TEXTURE_2D, m_PickingTexture);
+        glBindTexture(GL_TEXTURE_2D, s_ScreenTexture);
+        // glBindTexture(GL_TEXTURE_2D, s_PickingTexture);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -77,68 +138,32 @@ void Application::run()
         ImguiWindowManager::postRender();
 
 
-        glfwSwapBuffers(m_Window);
+        glfwSwapBuffers(s_Window);
 
 
         // Mouse Picking
-        if (mousePicked && !m_PreviousMousePicked)
+        if (mousePicked && !s_PreviousMousePicked)
         {
-            MousePicker::startPicking(m_FBO, { mousePosition.x, windowSize.y - mousePosition.y });
+            MousePicker::startPicking(s_FBO, { mousePosition.x, windowSize.y - mousePosition.y });
         }
-        else if (!mousePicked && m_PreviousMousePicked)
+        else if (!mousePicked && s_PreviousMousePicked)
         {
             MousePicker::endPicking();
         }
 
-        m_PreviousMousePicked = mousePicked;
+        s_PreviousMousePicked = mousePicked;
     }
 }
 
 void Application::changeSize(uint16_t newSize)
 {
-    m_CubeSize = newSize;
+    s_CubeSize = newSize;
     CubeManager::destroy();
-    CubeManager::generate(m_CubeSize);
+    CubeManager::generate(s_CubeSize);
 
-    MousePicker::init(&camera, CubeManager::getCubies(), m_CubeSize);
+    MousePicker::init(&camera, CubeManager::getCubies(), s_CubeSize);
 }
 
-void Application::init()
-{
-    camera = Camera(windowSize);
-
-    mousePosition = glm::vec2(0.0f);
-
-    setupGLFW();
-    setupOpenGL();
-    setupFramebuffer();
-    setupScreenVAO();
-
-    m_SettingsWindow = SettingsWindow(this, m_CubeSize);
-
-    ImguiWindowManager::init(m_Window);
-    ImguiWindowManager::addWindow(&m_SettingsWindow);
-
-    Face::initialize();
-
-    camera.setAngle(45.0f, 45.0f);
-    camera.distance = 3.0f;
-
-    m_CubeShader.compilePath("res/shaders/cube.vert", "res/shaders/cube.frag");
-
-    m_ScreenShader.compilePath("res/shaders/screen.vert", "res/shaders/screen.frag");
-
-    m_CubeShader.bind();
-    m_CubeShader.setUniformMatrix4("u_Projection", camera.getProjectionMatrix());
-
-    m_ScreenShader.bind();
-    m_ScreenShader.setUniformInt("u_ScreenTexture", 0);
-
-    CubeManager::generate(m_CubeSize);
-    Move::seconds = 0.1f;
-
-    MousePicker::init(&camera, CubeManager::getCubies(), m_CubeSize);
-}
 
 void Application::setupGLFW()
 {
@@ -152,23 +177,21 @@ void Application::setupGLFW()
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_SAMPLES, 4);
 
-    m_Window = glfwCreateWindow(windowSize.x, windowSize.y, m_Title.c_str(), NULL, NULL);
+    s_Window = glfwCreateWindow(windowSize.x, windowSize.y, s_Title.c_str(), NULL, NULL);
 
-    if (!m_Window)
+    if (!s_Window)
     {
         std::cerr << "Failed to create window\n";
         glfwTerminate();
         exit(-1);
     }
 
-    glfwMakeContextCurrent(m_Window);
+    glfwMakeContextCurrent(s_Window);
 
-    glfwSetWindowUserPointer(m_Window, (void*)this);
-
-    glfwSetCursorPosCallback(m_Window, Application::mouseCallback);
-    glfwSetKeyCallback(m_Window, Application::keyCallback);
-    glfwSetMouseButtonCallback(m_Window, Application::mouseButtonCallback);
-    glfwSetScrollCallback(m_Window, Application::scrollCallback);
+    glfwSetCursorPosCallback(s_Window, Application::mouseCallback);
+    glfwSetKeyCallback(s_Window, Application::keyCallback);
+    glfwSetMouseButtonCallback(s_Window, Application::mouseButtonCallback);
+    glfwSetScrollCallback(s_Window, Application::scrollCallback);
 
     glfwSwapInterval(1);
 }
@@ -206,8 +229,8 @@ void Application::setupScreenVAO()
 
     uint32_t vbo;
 
-    glGenVertexArrays(1, &m_ScreenVAO);
-    glBindVertexArray(m_ScreenVAO);
+    glGenVertexArrays(1, &s_ScreenVAO);
+    glBindVertexArray(s_ScreenVAO);
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -225,30 +248,30 @@ void Application::setupScreenVAO()
 
 void Application::setupFramebuffer()
 {
-    glGenFramebuffers(1, &m_FBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    glGenFramebuffers(1, &s_FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, s_FBO);
 
-    glGenTextures(1, &m_ScreenTexture);
-    glBindTexture(GL_TEXTURE_2D, m_ScreenTexture);
+    glGenTextures(1, &s_ScreenTexture);
+    glBindTexture(GL_TEXTURE_2D, s_ScreenTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, windowSize.x, windowSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glGenTextures(1, &m_PickingTexture);
-    glBindTexture(GL_TEXTURE_2D, m_PickingTexture);
+    glGenTextures(1, &s_PickingTexture);
+    glBindTexture(GL_TEXTURE_2D, s_PickingTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, windowSize.x, windowSize.y, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glGenRenderbuffers(1, &m_RBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
+    glGenRenderbuffers(1, &s_RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, s_RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, windowSize.x, windowSize.y);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ScreenTexture, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_PickingTexture, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, s_ScreenTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, s_PickingTexture, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, s_RBO);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cerr << "ERROR::Framebuffer is incomplete\n";
@@ -258,18 +281,16 @@ void Application::setupFramebuffer()
 
 void Application::mouseCallback(GLFWwindow* window, double xPos, double yPos)
 {
-    Application* app = (Application*)glfwGetWindowUserPointer(window);
-
     static float lastX = 0.0f;
     static float lastY = 0.0f;
 
-    app->mousePosition = glm::vec2(xPos, yPos);
+    Application::mousePosition = glm::vec2(xPos, yPos);
 
-    if (app->firstMouse)
+    if (Application::firstMouse)
     {
         lastX = xPos;
         lastY = yPos;
-        app->firstMouse = false;
+        Application::firstMouse = false;
     }
 
     float xOffset = xPos - lastX; 
@@ -282,41 +303,39 @@ void Application::mouseCallback(GLFWwindow* window, double xPos, double yPos)
 
     MousePicker::mouseMoved({ mouseOffset.x, mouseOffset.y });
 
-    if (!app->mouseMove)
+    if (!Application::mouseMove)
         return;
 
-    app->camera.processAngleChange(xOffset, yOffset);
+    Application::camera.processAngleChange(xOffset, yOffset);
 }
 
 void Application::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
-    Application* app = (Application*)glfwGetWindowUserPointer(window);
-
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
     {
-        if (!app->mouseMove)
+        if (!Application::mouseMove)
         {
-            app->mouseMove = true;
-            app->firstMouse = true;
+            Application::mouseMove = true;
+            Application::firstMouse = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
     }
     else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
     {
-        if (app->mouseMove)
+        if (Application::mouseMove)
         {
-            app->mouseMove = false;
+            Application::mouseMove = false;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
     }
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
-        app->mousePicked = true;
+        Application::mousePicked = true;
     }
     else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
-        app->mousePicked = false;
+        Application::mousePicked = false;
     }
 }
 
@@ -362,8 +381,6 @@ void Application::keyCallback(GLFWwindow* window, int key, int scancode, int act
 
 void Application::scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
 {
-    Application* app = (Application*)glfwGetWindowUserPointer(window);
-
-    app->camera.processScrollWheel(-yOffset);
+    Application::camera.processScrollWheel(-yOffset);
 }
 

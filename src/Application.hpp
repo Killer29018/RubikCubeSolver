@@ -19,51 +19,51 @@
 class Application
 {
 public:
-
-    bool firstMouse = true;
-    bool mouseMove = false;
+    static bool firstMouse;
+    static bool mouseMove;
     
-    bool mousePicked = false;
+    static bool mousePicked;
 
-    glm::vec2 mousePosition;
-    glm::ivec2 windowSize;
+    static glm::vec2 mousePosition;
+    static glm::ivec2 windowSize;
 
-    Camera camera;
+    static Camera camera;
 private:
-    GLFWwindow* m_Window;
+    static GLFWwindow* s_Window;
 
-    std::string m_Title;
+    static std::string s_Title;
 
-    uint16_t m_CubeSize = 3;
+    static uint16_t s_CubeSize;
 
-    KRE::Shader m_CubeShader;
-    KRE::Shader m_ScreenShader;
+    static KRE::Shader s_CubeShader;
+    static KRE::Shader s_ScreenShader;
 
-    uint32_t m_FBO;
-    uint32_t m_ScreenTexture;
-    uint32_t m_PickingTexture;
-    uint32_t m_RBO;
+    static uint32_t s_FBO;
+    static uint32_t s_ScreenTexture;
+    static uint32_t s_PickingTexture;
+    static uint32_t s_RBO;
 
-    uint32_t m_ScreenVAO;
+    static uint32_t s_ScreenVAO;
 
-    bool m_PreviousMousePicked = false;
+    static bool s_PreviousMousePicked;
 
-    SettingsWindow m_SettingsWindow;
+    static SettingsWindow s_SettingsWindow;
 public:
-    Application(std::string title, glm::ivec2 windowSize);
     ~Application();
 
-    void run();
+    static void init(std::string title, glm::ivec2 windowSize);
 
-    void changeSize(uint16_t newSize);
+    static void run();
+
+    static void changeSize(uint16_t newSize);
 private:
-    void init();
+    Application() {}
 
-    void setupGLFW();
-    void setupOpenGL();
+    static void setupGLFW();
+    static void setupOpenGL();
 
-    void setupFramebuffer();
-    void setupScreenVAO();
+    static void setupFramebuffer();
+    static void setupScreenVAO();
 
     static void mouseCallback(GLFWwindow* window, double xPos, double yPos);
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);

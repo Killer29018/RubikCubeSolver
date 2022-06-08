@@ -2,9 +2,8 @@
 
 int main()
 {
-    Application app("Rubik Cube", { 600, 600 });
-
-    app.run();
+    Application::init("Rubik Cube", { 800, 800 });
+    Application::run();
 
     return 0;
 }
