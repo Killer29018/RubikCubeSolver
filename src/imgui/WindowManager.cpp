@@ -29,8 +29,8 @@ void ImguiWindowManager::preRender()
 
 void ImguiWindowManager::render()
 {
-    // static bool showDemo = false;
-    // ImGui::ShowDemoWindow(&showDemo);
+    static bool showDemo = false;
+    ImGui::ShowDemoWindow(&showDemo);
 
     std::for_each(m_ImguiWindows.cbegin(), m_ImguiWindows.cend(), [](ImguiWindow* window){
             window->renderImgui(); });

@@ -64,7 +64,7 @@ enum class SliceMode : uint8_t
 
 struct Move
 {
-    inline static float seconds = 1.0f;
+    inline static float seconds = 0.2f;
 
     FaceEnum face;
     RotationEnum rotation;

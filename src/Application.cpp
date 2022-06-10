@@ -72,7 +72,6 @@ void Application::init(std::string title, glm::ivec2 windowSize)
     s_ScreenShader.setUniformInt("u_ScreenTexture", 0);
 
     CubeManager::generate(s_CubeSize);
-    Move::seconds = 0.1f;
 
     MousePicker::init(&camera, CubeManager::getCubies(), s_CubeSize);
 }
@@ -346,37 +345,6 @@ void Application::keyCallback(GLFWwindow* window, int key, int scancode, int act
         glfwSetWindowShouldClose(window, true);
         return;
     }
-
-    RotationEnum rotation = RotationEnum::NORMAL;
-
-    if (mods == GLFW_MOD_SHIFT)
-        rotation = RotationEnum::PRIME;
-
-    if (key == GLFW_KEY_C && action == GLFW_PRESS)
-        // CubeManager::applyMoves("M2 E2 S2");
-        CubeManager::applyMoves("r2 R2 u2 U2 b2 B2");
-    if (key == GLFW_KEY_Z && action == GLFW_PRESS)
-        CubeManager::applyMoves("U' F' R2 F R' F' U F' R'");
-    if (key == GLFW_KEY_V && action == GLFW_PRESS)
-        Solver::solve();
-    if (key == GLFW_KEY_R && action == GLFW_PRESS)
-        CubeManager::doMove({ FaceEnum::RIGHT, rotation });
-    if (key == GLFW_KEY_L && action == GLFW_PRESS)
-        CubeManager::doMove({ FaceEnum::LEFT, rotation });
-    if (key == GLFW_KEY_U && action == GLFW_PRESS)
-        CubeManager::doMove({ FaceEnum::UP, rotation });
-    if (key == GLFW_KEY_D && action == GLFW_PRESS)
-        CubeManager::doMove({ FaceEnum::DOWN, rotation });
-    if (key == GLFW_KEY_F && action == GLFW_PRESS)
-        CubeManager::doMove({ FaceEnum::FRONT, rotation });
-    if (key == GLFW_KEY_B && action == GLFW_PRESS)
-        CubeManager::doMove({ FaceEnum::BACK, rotation });
-    if (key == GLFW_KEY_M && action == GLFW_PRESS)
-        CubeManager::doMove({ FaceEnum::LEFT, rotation, 1 });
-    if (key == GLFW_KEY_E && action == GLFW_PRESS)
-        CubeManager::doMove({ FaceEnum::DOWN, rotation, 1 });
-    if (key == GLFW_KEY_S && action == GLFW_PRESS)
-        CubeManager::doMove({ FaceEnum::FRONT, rotation, 1 });
 }
 
 void Application::scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
