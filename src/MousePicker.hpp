@@ -31,12 +31,12 @@ public:
     static float movementThreshold;
 private:
     static Camera* s_Camera;
-    static QB**** s_Cubies;
+    static QB** s_Cubies;
     static uint16_t s_Size;
 
     static bool s_MousePickEnabled;
 public:
-    static void init(Camera* camera, QB**** cubies, uint16_t size);
+    static void init(Camera* camera, QB** cubies, uint16_t size);
 
     static void startPicking(uint32_t fbo, glm::vec2 mousePosition);
     static void mouseMoved(glm::vec2 mouseOffset);

@@ -15,8 +15,8 @@
 class CubeManager
 {
 private:
-    static QB**** s_Cubies; // Graphical Positions
-    static QB**** s_CurrentCubies; // Positions in memory
+    static QB** s_Cubies; // Graphical Positions
+    static QB** s_CurrentCubies; // Positions in memory
 
     static std::vector<glm::ivec2> s_SwapIndices;
 
@@ -41,7 +41,10 @@ public:
     static LocalEdgeEnum getLocalEdge(glm::ivec3 pos, FaceEnum face);
     static LocalCornerEnum getLocalCorner(glm::ivec3 pos, FaceEnum face);
 
-    static QB**** getCubies() { return s_CurrentCubies; }
+    static QB** getCubies() { return s_CurrentCubies; }
+
+    static size_t getIndex(uint16_t x, uint16_t y, uint16_t z);
+    static size_t getIndex(glm::ivec3 index);
 private:
     CubeManager() = default;
 
@@ -51,13 +54,13 @@ private:
     static void rotateAnimate(float dt);
     static void rotateCurrent(Move& move);
 
-    static void rotate(QB***** cubies, Move& move, float dt, bool animate);
+    static void rotate(QB*** cubies, Move& move, float dt, bool animate);
 
-    static void swapCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate);
-    static void swapCCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate);
+    static void swapCW(QB*** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate);
+    static void swapCCW(QB*** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate);
 
-    static void getSavedPositionsCW(QB***** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
-    static void getSavedPositionsCCW(QB***** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
+    static void getSavedPositionsCW(QB*** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
+    static void getSavedPositionsCCW(QB*** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis);
 };
 
 #endif

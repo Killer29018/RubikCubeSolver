@@ -3,8 +3,8 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-QB**** CubeManager::s_Cubies;
-QB**** CubeManager::s_CurrentCubies;
+QB** CubeManager::s_Cubies;
+QB** CubeManager::s_CurrentCubies;
 
 std::vector<glm::ivec2> CubeManager::s_SwapIndices;
 
@@ -20,63 +20,60 @@ void CubeManager::generate(uint8_t size)
 
     assert(s_Size >= 2  && s_Size <= 3 && "Only a 3x3 or 2x2 Cube is currently supported");
 
-    s_Cubies = new QB***[s_Size];
-    s_CurrentCubies = new QB***[s_Size];
+    // s_Cubies = new QB***[s_Size];
+    // s_CurrentCubies = new QB***[s_Size];
 
     float lowestX = (float)((s_Size - 1) / 2.0f) - (s_Size - 1);
     float lowestY = (float)((s_Size - 1) / 2.0f) - (s_Size - 1);
     float lowestZ = (float)((s_Size - 1) / 2.0f) - (s_Size - 1);
 
-    for (uint8_t i = 0; i < s_Size; i++)
+    s_Cubies = new QB*[s_Size * s_Size * s_Size];
+    s_CurrentCubies = new QB*[s_Size * s_Size * s_Size];
+
+    for (uint8_t z = 0; z < s_Size; z++)
     {
-        s_Cubies[i] = new QB**[s_Size];
-        s_CurrentCubies[i] = new QB**[s_Size];
-
-        for (uint8_t j = 0; j < s_Size; j++)
+        for (uint8_t y = 0; y < s_Size; y++)
         {
-            s_Cubies[i][j] = new QB*[s_Size];
-            s_CurrentCubies[i][j] = new QB*[s_Size];
-
-            for (uint8_t k = 0; k < s_Size; k++)
+            for (uint8_t x = 0; x < s_Size; x++)
             {
-                glm::vec3 pos(lowestX + k, lowestY + j, lowestZ + i);
-                glm::ivec3 index(k, j, i);
+                glm::vec3 pos(lowestX + x, lowestY + y, lowestZ + z);
+                glm::ivec3 index(x, y, z);
 
                 QB* qb = new QB(pos, index);
 
-                s_Cubies[i][j][k] = qb;
-                s_CurrentCubies[i][j][k] = qb;
+                s_Cubies[getIndex(index)] = qb;
+                s_CurrentCubies[getIndex(index)] = qb;
             }
         }
     }
 
     // Top | Bottom
-    for (uint8_t i = 0; i < s_Size; i++)
+    for (uint8_t z = 0; z < s_Size; z++)
     {
-        for (uint8_t k = 0; k < s_Size; k++)
+        for (uint8_t x = 0; x < s_Size; x++)
         {
-            s_Cubies[i][0][k]->addFace(FaceEnum::DOWN);
-            s_Cubies[i][s_Size - 1][k]->addFace(FaceEnum::UP);
+            s_Cubies[getIndex(x, 0, z)]->addFace(FaceEnum::DOWN);
+            s_Cubies[getIndex(x, s_Size - 1, z)]->addFace(FaceEnum::UP);
         }
     }
 
     // Left | Right
-    for (uint8_t i = 0; i < s_Size; i++)
+    for (uint8_t z = 0; z < s_Size; z++)
     {
-        for (uint8_t j = 0; j < s_Size; j++)
+        for (uint8_t y = 0; y < s_Size; y++)
         {
-            s_Cubies[i][j][0]->addFace(FaceEnum::LEFT);
-            s_Cubies[i][j][s_Size - 1]->addFace(FaceEnum::RIGHT);
+            s_Cubies[getIndex(0, y, z)]->addFace(FaceEnum::LEFT);
+            s_Cubies[getIndex(s_Size - 1, y, z)]->addFace(FaceEnum::RIGHT);
         }
     }
 
     // Front | Back
-    for (uint8_t j = 0; j < s_Size; j++)
+    for (uint8_t y = 0; y < s_Size; y++)
     {
-        for (uint8_t k = 0; k < s_Size; k++)
+        for (uint8_t x = 0; x < s_Size; x++)
         {
-            s_Cubies[0][j][k]->addFace(FaceEnum::BACK);
-            s_Cubies[s_Size - 1][j][k]->addFace(FaceEnum::FRONT);
+            s_Cubies[getIndex(x, y, 0)]->addFace(FaceEnum::BACK);
+            s_Cubies[getIndex(x, y, s_Size - 1)]->addFace(FaceEnum::FRONT);
         }
     }
 
@@ -104,19 +101,15 @@ void CubeManager::generate(uint8_t size)
 
 void CubeManager::destroy()
 {
-    for (int i = 0; i < s_Size; i++)
+    for (int z = 0; z < s_Size - 1; z++)
     {
-        for (int j = 0; j < s_Size; j++)
+        for (int y = 0; y < s_Size - 1; y++)
         {
-            for (int k = 0; k < s_Size; k++)
+            for (int x = 0; x < s_Size - 1; x++)
             {
-                delete s_Cubies[i][j][k];
+                delete s_Cubies[getIndex(x, y, z)];
             }
-            delete[] s_Cubies[i][j];
-            delete[] s_CurrentCubies[i][j];
         }
-        delete[] s_Cubies[i];
-        delete[] s_CurrentCubies[i];
     }
     delete[] s_Cubies;
     delete[] s_CurrentCubies;
@@ -126,20 +119,20 @@ void CubeManager::destroy()
 
 void CubeManager::draw(KRE::Shader& shader)
 {
-    for (int i = 0; i < s_Size; i++) // z
+    for (int z = 0; z < s_Size; z++) // z
     {
-        for (int j = 0; j < s_Size; j++) // y
+        for (int y = 0; y < s_Size; y++) // y
         {
-            for (int k = 0; k < s_Size; k++) // x
+            for (int x = 0; x < s_Size; x++) // x
             {
                 glm::quat customRotation(1.0f, 0.0f, 0.0f, 0.0f);
 
-                glm::ivec3 index(k, j, i);
+                glm::ivec3 index(x, y, z);
 
                 if (MousePicker::qbPartOfSlice(index))
                     customRotation = glm::angleAxis(glm::radians(MousePicker::pickedObject.angle), MousePicker::pickedObject.angleAxis);
 
-                s_Cubies[i][j][k]->draw(shader, customRotation);
+                s_Cubies[getIndex(index)]->draw(shader, customRotation);
             }
         }
     }
@@ -329,6 +322,16 @@ LocalCornerEnum CubeManager::getLocalCorner(glm::ivec3 pos, FaceEnum face)
     }
 }
 
+size_t CubeManager::getIndex(uint16_t x, uint16_t y, uint16_t z)
+{
+    return x + (s_Size * y) + (s_Size * s_Size * z);
+}
+
+size_t CubeManager::getIndex(glm::ivec3 index)
+{
+    return getIndex(index.x, index.y, index.z);
+}
+
 glm::vec3 CubeManager::coordsToPosition(uint16_t x, uint16_t y, uint16_t z)
 {
     glm::vec3 returnVec(0.0f);
@@ -344,21 +347,21 @@ glm::ivec3 CubeManager::getCurrentIndex(uint16_t constant, glm::ivec3 axis, glm:
     glm::ivec3 index(0);
     if (axis.x != 0)
     {
-        index.x = swapPosition.x;
+        index.z = swapPosition.x;
         index.y = swapPosition.y;
-        index.z = constant;
+        index.x = constant;
     }
     else if (axis.y != 0)
     {
-        index.x = swapPosition.x;
+        index.z = swapPosition.x;
         index.y = constant;
-        index.z = swapPosition.y;
+        index.x = swapPosition.y;
     }
     else if (axis.z != 0)
     {
-        index.x = constant;
+        index.z = constant;
         index.y = swapPosition.x;
-        index.z = swapPosition.y;
+        index.x = swapPosition.y;
     }
 
     return index;
@@ -387,7 +390,7 @@ void CubeManager::rotateCurrent(Move& move)
     rotate(&s_CurrentCubies, move, 0.0f, false);
 }
 
-void CubeManager::rotate(QB***** cubies, Move& move, float dt, bool animate)
+void CubeManager::rotate(QB*** cubies, Move& move, float dt, bool animate)
 {
     if (move.rotation == RotationEnum::NONE)
     {
@@ -484,7 +487,7 @@ void CubeManager::rotate(QB***** cubies, Move& move, float dt, bool animate)
     }
 }
 
-void CubeManager::swapCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate)
+void CubeManager::swapCW(QB*** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate)
 {
     bool completed = false;
     for (int i = 0; i < std::abs(angleMult); i++)
@@ -505,21 +508,21 @@ void CubeManager::swapCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationA
 
             if (percentage >= 1.0f && animate)
             {
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z] = (*cubies)[nextIndex.x][nextIndex.y][nextIndex.z];
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->pos = coordsToPosition(currentIndex.z, currentIndex.y, currentIndex.x);
+                (*cubies)[getIndex(currentIndex)] = (*cubies)[getIndex(nextIndex)];
+                (*cubies)[getIndex(currentIndex)]->pos = coordsToPosition(currentIndex.x, currentIndex.y, currentIndex.z);
             }
             else if (!animate)
             {
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z] = (*cubies)[nextIndex.x][nextIndex.y][nextIndex.z];
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->index = glm::ivec3(currentIndex.z, currentIndex.y, currentIndex.x);
+                (*cubies)[getIndex(currentIndex)] = (*cubies)[getIndex(nextIndex)];
+                (*cubies)[getIndex(currentIndex)]->index = glm::ivec3(currentIndex.x, currentIndex.y, currentIndex.z);
             }
 
             if (!completed)
             {
                 if (animate)
-                    (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+                    (*cubies)[getIndex(currentIndex)]->rotate(rotationAxis, percentage, angleMult);
                 else
-                    (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotateCurrent(rotationAxis, angleMult);
+                    (*cubies)[getIndex(currentIndex)]->rotateCurrent(rotationAxis, angleMult);
             }
         }
 
@@ -530,21 +533,21 @@ void CubeManager::swapCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationA
 
             if (percentage >= 1.0f && animate)
             {
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z] = stored[i];
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->pos = coordsToPosition(currentIndex.z, currentIndex.y, currentIndex.x);
+                (*cubies)[getIndex(currentIndex)] = stored[i];
+                (*cubies)[getIndex(currentIndex)]->pos = coordsToPosition(currentIndex.x, currentIndex.y, currentIndex.z);
             }
             else if (!animate)
             {
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z] = stored[i];
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->index = glm::ivec3(currentIndex.z, currentIndex.y, currentIndex.x);
+                (*cubies)[getIndex(currentIndex)] = stored[i];
+                (*cubies)[getIndex(currentIndex)]->index = glm::ivec3(currentIndex.x, currentIndex.y, currentIndex.z);
             }
 
             if (!completed)
             {
                 if (animate)
-                    (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+                    (*cubies)[getIndex(currentIndex)]->rotate(rotationAxis, percentage, angleMult);
                 else
-                    (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotateCurrent(rotationAxis, angleMult);
+                    (*cubies)[getIndex(currentIndex)]->rotateCurrent(rotationAxis, angleMult);
             }
         }
 
@@ -553,14 +556,14 @@ void CubeManager::swapCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationA
             if (s_Size > 2)
             {
                 currentIndex = getCurrentIndex(constant, rotationAxis, { 1, 1 });
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+                (*cubies)[getIndex(currentIndex)]->rotate(rotationAxis, percentage, angleMult);
             }
         }
         completed = true;
     }
 }
 
-void CubeManager::swapCCW(QB***** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate)
+void CubeManager::swapCCW(QB*** cubies, uint16_t constant, glm::ivec3 rotationAxis, float percentage, int8_t angleMult, bool animate)
 {
     bool completed = false;
     for (int i = 0; i < std::abs(angleMult); i++)
@@ -581,21 +584,21 @@ void CubeManager::swapCCW(QB***** cubies, uint16_t constant, glm::ivec3 rotation
 
             if (percentage >= 1.0f && animate)
             {
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z] = (*cubies)[nextIndex.x][nextIndex.y][nextIndex.z];
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->pos = coordsToPosition(currentIndex.z, currentIndex.y, currentIndex.x);
+                (*cubies)[getIndex(currentIndex)] = (*cubies)[getIndex(nextIndex)];
+                (*cubies)[getIndex(currentIndex)]->pos = coordsToPosition(currentIndex.x, currentIndex.y, currentIndex.z);
             }
             else if (!animate)
             {
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z] = (*cubies)[nextIndex.x][nextIndex.y][nextIndex.z];
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->index = glm::ivec3(currentIndex.z, currentIndex.y, currentIndex.x);
+                (*cubies)[getIndex(currentIndex)] = (*cubies)[getIndex(nextIndex)];
+                (*cubies)[getIndex(currentIndex)]->index = glm::ivec3(currentIndex.x, currentIndex.y, currentIndex.z);
             }
 
             if (!completed)
             {
                 if (animate)
-                    (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+                    (*cubies)[getIndex(currentIndex)]->rotate(rotationAxis, percentage, angleMult);
                 else
-                    (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotateCurrent(rotationAxis, angleMult);
+                    (*cubies)[getIndex(currentIndex)]->rotateCurrent(rotationAxis, angleMult);
             }
         }
 
@@ -606,21 +609,21 @@ void CubeManager::swapCCW(QB***** cubies, uint16_t constant, glm::ivec3 rotation
 
             if (percentage >= 1.0f && animate)
             {
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z] = stored[i];
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->pos = coordsToPosition(currentIndex.z, currentIndex.y, currentIndex.x);
+                (*cubies)[getIndex(currentIndex)] = stored[i];
+                (*cubies)[getIndex(currentIndex)]->pos = coordsToPosition(currentIndex.x, currentIndex.y, currentIndex.z);
             }
             else if (!animate)
             {
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z] = stored[i];
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->index = glm::ivec3(currentIndex.z, currentIndex.y, currentIndex.x);
+                (*cubies)[getIndex(currentIndex)] = stored[i];
+                (*cubies)[getIndex(currentIndex)]->index = glm::ivec3(currentIndex.x, currentIndex.y, currentIndex.z);
             }
 
             if (!completed)
             {
                 if (animate)
-                    (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+                    (*cubies)[getIndex(currentIndex)]->rotate(rotationAxis, percentage, angleMult);
                 else
-                    (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotateCurrent(rotationAxis, angleMult);
+                    (*cubies)[getIndex(currentIndex)]->rotateCurrent(rotationAxis, angleMult);
             }
         }
 
@@ -629,14 +632,14 @@ void CubeManager::swapCCW(QB***** cubies, uint16_t constant, glm::ivec3 rotation
             if (s_Size > 2)
             {
                 currentIndex = getCurrentIndex(constant, rotationAxis, { 1, 1 });
-                (*cubies)[currentIndex.x][currentIndex.y][currentIndex.z]->rotate(rotationAxis, percentage, angleMult);
+                (*cubies)[getIndex(currentIndex)]->rotate(rotationAxis, percentage, angleMult);
             }
         }
         completed = true;
     }
 }
 
-void CubeManager::getSavedPositionsCW(QB***** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis)
+void CubeManager::getSavedPositionsCW(QB*** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis)
 {
     for (int i = 0; i < s_Size - 1; i++)
     {
@@ -644,12 +647,12 @@ void CubeManager::getSavedPositionsCW(QB***** cubies, std::vector<QB*>& stored, 
 
         glm::ivec3 index = getCurrentIndex(constant, axis, swapPosition);
 
-        QB* last = (*cubies)[index.x][index.y][index.z];
+        QB* last = (*cubies)[getIndex(index)];
         stored.push_back(last);
     }
 }
 
-void CubeManager::getSavedPositionsCCW(QB***** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis)
+void CubeManager::getSavedPositionsCCW(QB*** cubies, std::vector<QB*>& stored, uint16_t constant, glm::ivec3 axis)
 {
     for (int i = 0; i < s_Size - 1; i++)
     {
@@ -657,7 +660,7 @@ void CubeManager::getSavedPositionsCCW(QB***** cubies, std::vector<QB*>& stored,
 
         glm::ivec3 index = getCurrentIndex(constant, axis, swapPosition);
 
-        QB* last = (*cubies)[index.x][index.y][index.z];
+        QB* last = (*cubies)[getIndex(index)];
         stored.push_back(last);
     }
 }

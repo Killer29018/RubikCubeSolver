@@ -2,10 +2,10 @@
 
 #include "CubeManager.hpp"
 
-QB**** Solver::s_Cubies;
+QB** Solver::s_Cubies;
 uint16_t Solver::s_Size;
 
-void Solver::loadCube(QB**** cubies, uint16_t size)
+void Solver::loadCube(QB** cubies, uint16_t size)
 {
     s_Cubies = cubies;
 
@@ -781,7 +781,7 @@ void Solver::reorientateBottomCorners()
     {
         for (size_t i = 0; i < bottomCorners.size(); i++)
         {
-            QB* current = s_Cubies[s_Size - 1][0][s_Size - 1];
+            QB* current = s_Cubies[CubeManager::getIndex(s_Size - 1, 0, s_Size - 1)];
 
             while (current->getFacingSide(face) != face)
                 CubeManager::applyMoves(moves);
@@ -874,10 +874,10 @@ std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
         {
             for (int x = 0; x < s_Size; x++)
             {
-                size_t count = s_Cubies[z][y][x]->getFaceCount();
-                if (count == static_cast<int>(faceType) && s_Cubies[z][y][x]->hasFace(face))
+                size_t count = s_Cubies[CubeManager::getIndex(x, y, z)]->getFaceCount();
+                if (count == static_cast<int>(faceType) && s_Cubies[CubeManager::getIndex(x, y, z)]->hasFace(face))
                 {
-                    edges.push_back(s_Cubies[z][y][x]);
+                    edges.push_back(s_Cubies[CubeManager::getIndex(x, y, z)]);
                 }
             }
         }
@@ -895,10 +895,10 @@ std::vector<QB*> Solver::findNotQB(FaceEnum face, QBTypeEnum faceType)
         {
             for (int x = 0; x < s_Size; x++)
             {
-                size_t count = s_Cubies[z][y][x]->getFaceCount();
-                if (count == static_cast<int>(faceType) && !s_Cubies[z][y][x]->hasFace(face))
+                size_t count = s_Cubies[CubeManager::getIndex(x, y, z)]->getFaceCount();
+                if (count == static_cast<int>(faceType) && !s_Cubies[CubeManager::getIndex(x, y, z)]->hasFace(face))
                 {
-                    edges.push_back(s_Cubies[z][y][x]);
+                    edges.push_back(s_Cubies[CubeManager::getIndex(x, y, z)]);
                 }
             }
         }
@@ -916,9 +916,9 @@ int Solver::getCountFacing(FaceEnum face, QBTypeEnum faceType)
         {
             for (int x = 0; x < s_Size; x++)
             {
-                if (s_Cubies[z][y][x]->hasFace(face) && s_Cubies[z][y][x]->getFaceCount() == static_cast<int>(faceType))
+                if (s_Cubies[CubeManager::getIndex(x, y, z)]->hasFace(face) && s_Cubies[CubeManager::getIndex(x, y, z)]->getFaceCount() == static_cast<int>(faceType))
                 {
-                    if (s_Cubies[z][y][x]->getFacingSide(face) == face)
+                    if (s_Cubies[CubeManager::getIndex(x, y, z)]->getFacingSide(face) == face)
                     {
                         count++;
                     }

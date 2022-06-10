@@ -12,10 +12,10 @@ class Solver
 {
 public:
 private:
-    static QB**** s_Cubies;
+    static QB** s_Cubies;
     static uint16_t s_Size;
 public:
-    static void loadCube(QB**** cubies, uint16_t size);
+    static void loadCube(QB** cubies, uint16_t size);
 
     static void solve();
 private:

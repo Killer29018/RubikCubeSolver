@@ -11,12 +11,12 @@ MousePickerStruct MousePicker::pickedObject;
 float MousePicker::movementThreshold = 30.0f;
 
 Camera* MousePicker::s_Camera;
-QB**** MousePicker::s_Cubies;
+QB** MousePicker::s_Cubies;
 uint16_t MousePicker::s_Size = 0;
 
 bool MousePicker::s_MousePickEnabled = false;
 
-void MousePicker::init(Camera* camera, QB**** cubies, uint16_t size)
+void MousePicker::init(Camera* camera, QB** cubies, uint16_t size)
 {
     s_Camera = camera;
     s_Cubies = cubies;
@@ -49,7 +49,7 @@ void MousePicker::startPicking(uint32_t fbo, glm::vec2 mousePosition)
     index.z = pixelData.w;
 
     pickedObject.index = index;
-    pickedObject.qb = s_Cubies[index.z][index.y][index.x];
+    pickedObject.qb = s_Cubies[CubeManager::getIndex(index)];
 
     pickedObject.mouseOffset = glm::vec2(0.0f);
 }
