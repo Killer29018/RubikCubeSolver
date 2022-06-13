@@ -79,6 +79,16 @@ struct Move
     Move(FaceEnum face, RotationEnum rotation, uint8_t slice, SliceMode mode = SliceMode::SINGLE) : face(face), rotation(rotation), slice(slice), sliceMode(mode) {}
 };
 
+inline bool operator==(const Move& lhs, const Move& rhs)
+{
+    return (lhs.face == rhs.face && lhs.slice == rhs.slice && lhs.sliceMode == rhs.sliceMode);
+}
+
+inline bool operator!=(const Move& lhs, const Move& rhs)
+{
+    return !(lhs == rhs);
+}
+
 inline RotationEnum reverseRotation(RotationEnum rotation)
 {
     switch (rotation)
@@ -94,6 +104,27 @@ inline RotationEnum reverseRotation(RotationEnum rotation)
     }
 
     return RotationEnum::NONE;
+}
+
+inline FaceEnum oppositeFace(FaceEnum face)
+{
+    switch (face)
+    {
+    case FaceEnum::FRONT:
+        return FaceEnum::BACK;
+    case FaceEnum::RIGHT:
+        return FaceEnum::LEFT;
+    case FaceEnum::BACK:
+        return FaceEnum::FRONT;
+    case FaceEnum::LEFT:
+        return FaceEnum::RIGHT;
+    case FaceEnum::UP:
+        return FaceEnum::DOWN;
+    case FaceEnum::DOWN:
+        return FaceEnum::UP;
+    }
+
+    return FaceEnum::NONE;
 }
 
 namespace std
