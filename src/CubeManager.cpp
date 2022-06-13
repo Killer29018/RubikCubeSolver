@@ -10,8 +10,6 @@ std::vector<glm::ivec2> CubeManager::s_SwapIndices;
 
 uint8_t CubeManager::s_Size;
 
-std::queue<Move> CubeManager::s_Moves;
-
 bool CubeManager::s_MousePick = false;
 
 void CubeManager::generate(uint8_t size)
@@ -140,7 +138,7 @@ void CubeManager::draw(KRE::Shader& shader)
 
 void CubeManager::update(float dt)
 {
-    if (s_Moves.empty())
+    if (MoveManager::isEmpty())
         return;
 
     rotateAnimate(dt);
@@ -200,7 +198,7 @@ void CubeManager::applyMoves(std::string input)
 void CubeManager::doMove(Move move)
 {
     rotateCurrent(move);
-    s_Moves.push(move);
+    MoveManager::addMove(move);
 }
 
 glm::ivec2 CubeManager::getLocalPos(glm::ivec3 pos, FaceEnum face)
@@ -369,20 +367,15 @@ glm::ivec3 CubeManager::getCurrentIndex(uint16_t constant, glm::ivec3 axis, glm:
 
 void CubeManager::rotateAnimate(float dt)
 {
-    Move& move = s_Moves.front();
+    Move* move = MoveManager::getMove();
 
-    if (move.rotation == RotationEnum::NONE)
+    if (MoveManager::moveFinished())
     {
-        s_Moves.pop();
-        return;
+        Move m = MoveManager::removeMove();
+        move = &m;
     }
 
-    if (move.time >= 1.0f)
-    {
-        s_Moves.pop();
-    }
-    rotate(&s_Cubies, move, dt, true);
-
+    rotate(&s_Cubies, *move, dt, true);
 }
 
 void CubeManager::rotateCurrent(Move& move)

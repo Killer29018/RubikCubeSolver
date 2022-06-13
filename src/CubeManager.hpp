@@ -6,6 +6,7 @@
 #include "Enums.hpp"
 #include "Solver.hpp"
 #include "MousePicker.hpp"
+#include "MoveManager.hpp"
 
 #include "QB.hpp"
 
@@ -21,8 +22,6 @@ private:
     static std::vector<glm::ivec2> s_SwapIndices;
 
     static uint8_t s_Size;
-
-    static std::queue<Move> s_Moves;
 
     static bool s_MousePick;
 public:
