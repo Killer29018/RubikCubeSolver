@@ -8,6 +8,8 @@
 #include "Enums.hpp"
 #include "QB.hpp"
 
+#include "Util.hpp"
+
 class Solver
 {
 public:
@@ -63,11 +65,6 @@ private:
     static RotationEnum getRotationToTarget(T current, T target)
     {
         return getRotationToTarget(static_cast<int>(current), static_cast<int>(target));
-    }
-
-    static int positiveMod(int dividend, int divisor)
-    {
-    return (dividend % divisor + divisor) % divisor;
     }
 };
 

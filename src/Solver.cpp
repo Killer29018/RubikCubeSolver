@@ -1,6 +1,7 @@
 #include "Solver.hpp"
 
 #include "CubeManager.hpp"
+#include "Util.hpp"
 
 QB** Solver::s_Cubies;
 uint16_t Solver::s_Size;

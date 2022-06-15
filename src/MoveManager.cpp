@@ -1,6 +1,8 @@
 #include "MoveManager.hpp"
 #include <iostream>
 
+#include "Util.hpp"
+
 std::vector<Move> MoveManager::s_Moves;
 
 void MoveManager::addMove(const Move &move)
@@ -52,7 +54,7 @@ void MoveManager::optimiseMoves()
                 continue;
         }
 
-        if (removeMoves(s_Moves[i - 1], s_Moves[i], 1))
+        if (removeMoves(s_Moves[i - 1], s_Moves[i]))
         {
             s_Moves.erase(s_Moves.begin() + i);
 
@@ -62,32 +64,42 @@ void MoveManager::optimiseMoves()
                 i--;
             }
 
-
             continue;
         }
-        else if (i >= 3 && removeMoves(s_Moves[i - 2], s_Moves[i], 2))
+        else if (i >= 2 && s_Moves[i - 2].time == 0 && removeMoves(s_Moves[i - 2], s_Moves[i - 1], s_Moves[i]))
         {
             s_Moves.erase(s_Moves.begin() + i);
+            if (s_Moves[i - 2].rotation == RotationEnum::NONE)
+            {
+                s_Moves.erase(s_Moves.begin() + i - 2);
+                i--;
+            }
             continue;
         }
     }
 }
 
-bool MoveManager::removeMoves(Move& move1, const Move& move2, int offset)
+bool MoveManager::removeMoves(Move& move1, const Move& move2)
 {
-    if (move1 == move2 && offset == 1) // Same Rotation immediately after eachother
+    if (move1 == move2) // Same Face Rotation immediately after eachother
     {
-        if (move1.rotation == move2.rotation)
-        {
-            if (move1.rotation == RotationEnum::NORMAL || move1.rotation == RotationEnum::PRIME)
-            {
-                move1.rotation = RotationEnum::TWICE;
-            }
-            else if (move1.rotation == RotationEnum::TWICE)
-                move1.rotation = RotationEnum::NONE;
+        int finalRotation = static_cast<int>(move1.rotation) + static_cast<int>(move2.rotation);
 
-            return true;
-        }
+        finalRotation = positiveMod(finalRotation, 4);
+        RotationEnum rot = static_cast<RotationEnum>(finalRotation);
+
+        move1.rotation = rot;
+        return true;
+    }
+
+    return false;
+}
+
+bool MoveManager::removeMoves(Move& move1, const Move& move2, const Move& move3)
+{
+    if (move1 == move3 && move1 == oppositeMove(move2)) // Move1 and Move3 are same while move2 is opposite
+    {
+        return removeMoves(move1, move3);
     }
     return false;
 }

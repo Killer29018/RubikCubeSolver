@@ -22,7 +22,8 @@ private:
     ~MoveManager() = default;
 
     static void optimiseMoves();
-    static bool removeMoves(Move& move1, const Move& move2, int offset = 1);
+    static bool removeMoves(Move& move1, const Move& move2);
+    static bool removeMoves(Move& move1, const Move& move2, const Move& move3);
 };
 
 #endif
