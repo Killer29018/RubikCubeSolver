@@ -39,9 +39,10 @@ inline FaceEnum oppositeFace(const FaceEnum& face)
         return FaceEnum::DOWN;
     case FaceEnum::DOWN:
         return FaceEnum::UP;
-    }
 
-    return FaceEnum::NONE;
+    default:
+        return FaceEnum::NONE;
+    }
 }
 
 inline Move oppositeMove(const Move& move)
