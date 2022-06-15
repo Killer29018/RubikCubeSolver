@@ -2,6 +2,7 @@
 
 #include "CubeManager.hpp"
 #include "Util.hpp"
+#include "MoveManager.hpp"
 
 QB** Solver::s_Cubies;
 uint16_t Solver::s_Size;
@@ -15,6 +16,8 @@ void Solver::loadCube(QB** cubies, uint16_t size)
 
 void Solver::solve()
 {
+    MoveManager::endScramble();
+    MoveManager::startSolve();
     if (s_Size > 2)
     {
         alignCenters();
@@ -36,6 +39,9 @@ void Solver::solve()
     positionBottomCorners();
 
     reorientateBottomCorners();
+
+    MoveManager::endSolve();
+    MoveManager::startScramble();
 }
 
 void Solver::alignCenters()

@@ -17,7 +17,8 @@ void SettingsWindow::renderImgui()
 
         uint16_t min = 2, max = 3;
 
-        static char scrambleSeq[200] = "";
+        constexpr size_t SCRAMBLE_SEQ_MAX_SIZE = 1000;
+        static char scrambleSeq[SCRAMBLE_SEQ_MAX_SIZE] = "";
 
         ImGui::Text("Cube Size");
         if (ImGui::SliderScalar("##CUBE_SIZE", ImGuiDataType_U16, &m_CubeSize, &min, &max, "%d"))
@@ -39,7 +40,7 @@ void SettingsWindow::renderImgui()
         }
 
         ImGui::Text("Scramble Sequence");
-        ImGui::InputText("##SCRAMBLE_TEXT", &scrambleSeq[0], 200);
+        ImGui::InputText("##SCRAMBLE_TEXT", &scrambleSeq[0], SCRAMBLE_SEQ_MAX_SIZE);
 
         float minF = 0.01f, maxF = 2.0f;
         ImGui::SliderScalar("##MOVE_SECONDS", ImGuiDataType_Float, &Move::seconds, &minF, &maxF);

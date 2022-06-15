@@ -95,6 +95,8 @@ void CubeManager::generate(uint8_t size)
     }
 
     Solver::loadCube(s_CurrentCubies, s_Size);
+
+    MoveManager::startScramble();
 }
 
 void CubeManager::destroy()
