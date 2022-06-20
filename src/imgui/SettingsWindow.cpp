@@ -4,8 +4,8 @@
 
 #include "../Application.hpp"
 
-SettingsWindow::SettingsWindow( uint16_t cubeSize)
-    : m_CubeSize(cubeSize)
+SettingsWindow::SettingsWindow(uint16_t cubeSize, MoveManager* moveManager)
+    : m_CubeSize(cubeSize), moveManager(moveManager)
 {
 }
 
@@ -14,6 +14,8 @@ void SettingsWindow::renderImgui()
     if (ImGui::Begin("Settings"))
     {
         ImGui::PushItemWidth(-1);
+
+        ImGui::Text("%.3f", (1.0f / KRE::Clock::deltaTime));
 
         uint16_t min = 2, max = 3;
 
@@ -28,7 +30,7 @@ void SettingsWindow::renderImgui()
 
         if (ImGui::Button("Solve", ImVec2(-1, 20)))
         {
-            Solver::solve();
+            Solver::solve(moveManager);
         }
 
         ImGui::Dummy(ImVec2(0.0f, 5.0f));

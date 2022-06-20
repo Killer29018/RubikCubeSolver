@@ -3,13 +3,6 @@
 
 #include "Util.hpp"
 
-std::vector<Move> MoveManager::s_Moves;
-std::vector<Move> MoveManager::s_SolveMoves;
-std::vector<Move> MoveManager::s_ScrambleMoves;
-
-bool MoveManager::s_SolveStore = false;
-bool MoveManager::s_ScrambleStore = false;
-
 void MoveManager::addMove(const Move &move)
 {
     if (move.rotation == RotationEnum::NONE)
@@ -17,16 +10,12 @@ void MoveManager::addMove(const Move &move)
 
     s_Moves.push_back(move);
 
-    if (s_SolveStore)
-    {
-        s_SolveMoves.push_back(move);
-    }
-    if (s_ScrambleStore)
-    {
-        s_ScrambleMoves.push_back(move);
-    }
+    optimiseMoves();
+}
 
-    optimiseMoves(s_Moves);
+const std::vector<Move>& MoveManager::getAllMoves()
+{
+    return s_Moves;
 }
 
 Move* MoveManager::getMove()
@@ -55,71 +44,42 @@ bool MoveManager::isEmpty()
     return s_Moves.empty();
 }
 
-const std::vector<Move>& MoveManager::getSolveMoves()
+void MoveManager::reset()
 {
-    return s_SolveMoves;
+    s_Moves.clear();
 }
 
-const std::vector<Move>& MoveManager::getScrambleMoves()
+void MoveManager::optimiseMoves()
 {
-    return s_ScrambleMoves;
-}
-
-void MoveManager::startSolve()
-{
-    s_SolveMoves.clear();
-    s_SolveStore = true;
-}
-
-void MoveManager::endSolve()
-{
-    s_SolveStore = false;
-    optimiseMoves(s_SolveMoves);
-}
-
-void MoveManager::startScramble()
-{
-    s_ScrambleMoves.clear();
-    s_ScrambleStore = true;
-}
-
-void MoveManager::endScramble()
-{
-    s_ScrambleStore = false;
-    optimiseMoves(s_ScrambleMoves);
-}
-
-void MoveManager::optimiseMoves(std::vector<Move>& moves)
-{
-    if (moves.size() <= 1)
+    if (s_Moves.size() <= 1)
         return;
 
-    for (int i = moves.size() - 1; i >= 1; i--)
+    for (int i = s_Moves.size() - 1; i >= 1; i--)
     {
         if (i == 1)
         {
-            if (moves[0].time != 0)
+            if (s_Moves[0].time != 0)
                 continue;
         }
 
-        if (removeMoves(moves[i - 1], moves[i]))
+        if (removeMoves(s_Moves[i - 1], s_Moves[i]))
         {
-            moves.erase(moves.begin() + i);
+            s_Moves.erase(s_Moves.begin() + i);
 
-            if (moves[i - 1].rotation == RotationEnum::NONE)
+            if (s_Moves[i - 1].rotation == RotationEnum::NONE)
             {
-                moves.erase(moves.begin() + i - 1);
+                s_Moves.erase(s_Moves.begin() + i - 1);
                 i--;
             }
 
             continue;
         }
-        else if (i >= 2 && moves[i - 2].time == 0 && removeMoves(moves[i - 2], moves[i - 1], moves[i]))
+        else if (i >= 2 && s_Moves[i - 2].time == 0 && removeMoves(s_Moves[i - 2], s_Moves[i - 1], s_Moves[i]))
         {
-            moves.erase(moves.begin() + i);
-            if (moves[i - 2].rotation == RotationEnum::NONE)
+            s_Moves.erase(s_Moves.begin() + i);
+            if (s_Moves[i - 2].rotation == RotationEnum::NONE)
             {
-                moves.erase(moves.begin() + i - 2);
+                s_Moves.erase(s_Moves.begin() + i - 2);
                 i--;
             }
             continue;

@@ -5,13 +5,17 @@
 
 #include <cstdint>
 
+#include "../MoveManager.hpp"
+
 class SettingsWindow : public ImguiWindow
 {
 private:
     uint16_t m_CubeSize;
+
+    MoveManager* moveManager;
 public:
     SettingsWindow() = default;
-    SettingsWindow(uint16_t cubeSize);
+    SettingsWindow(uint16_t cubeSize, MoveManager* moveManager);
 
     ~SettingsWindow() = default;
 

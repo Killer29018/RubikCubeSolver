@@ -14,10 +14,10 @@ void Solver::loadCube(QB** cubies, uint16_t size)
     s_Size = size;
 }
 
-void Solver::solve()
+void Solver::solve(MoveManager* moveManager)
 {
-    MoveManager::endScramble();
-    MoveManager::startSolve();
+    moveManager->reset();
+
     if (s_Size > 2)
     {
         alignCenters();
@@ -39,9 +39,6 @@ void Solver::solve()
     positionBottomCorners();
 
     reorientateBottomCorners();
-
-    MoveManager::endSolve();
-    MoveManager::startScramble();
 }
 
 void Solver::alignCenters()

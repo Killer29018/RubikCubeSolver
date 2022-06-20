@@ -12,14 +12,14 @@ uint8_t CubeManager::s_Size;
 
 bool CubeManager::s_MousePick = false;
 
-void CubeManager::generate(uint8_t size)
+MoveManager* CubeManager::s_MoveManager;
+
+void CubeManager::generate(uint8_t size, MoveManager* moveManager)
 {
+    s_MoveManager = moveManager;
     s_Size = size;
 
     assert(s_Size >= 2  && s_Size <= 3 && "Only a 3x3 or 2x2 Cube is currently supported");
-
-    // s_Cubies = new QB***[s_Size];
-    // s_CurrentCubies = new QB***[s_Size];
 
     float lowestX = (float)((s_Size - 1) / 2.0f) - (s_Size - 1);
     float lowestY = (float)((s_Size - 1) / 2.0f) - (s_Size - 1);
@@ -95,8 +95,6 @@ void CubeManager::generate(uint8_t size)
     }
 
     Solver::loadCube(s_CurrentCubies, s_Size);
-
-    MoveManager::startScramble();
 }
 
 void CubeManager::destroy()
@@ -140,7 +138,7 @@ void CubeManager::draw(KRE::Shader& shader)
 
 void CubeManager::update(float dt)
 {
-    if (MoveManager::isEmpty())
+    if (s_MoveManager->isEmpty())
         return;
 
     rotateAnimate(dt);
@@ -200,7 +198,7 @@ void CubeManager::applyMoves(std::string input)
 void CubeManager::doMove(Move move)
 {
     rotateCurrent(move);
-    MoveManager::addMove(move);
+    s_MoveManager->addMove(move);
 }
 
 glm::ivec2 CubeManager::getLocalPos(glm::ivec3 pos, FaceEnum face)
@@ -369,11 +367,11 @@ glm::ivec3 CubeManager::getCurrentIndex(uint16_t constant, glm::ivec3 axis, glm:
 
 void CubeManager::rotateAnimate(float dt)
 {
-    Move* move = MoveManager::getMove();
+    Move* move = s_MoveManager->getMove();
 
-    if (MoveManager::moveFinished())
+    if (s_MoveManager->moveFinished())
     {
-        Move m = MoveManager::removeMove();
+        Move m = s_MoveManager->removeMove();
         move = &m;
     }
 

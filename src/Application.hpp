@@ -47,6 +47,8 @@ private:
 
     static bool s_PreviousMousePicked;
 
+    static MoveManager s_MoveManager;
+
     static SettingsWindow s_SettingsWindow;
 public:
     ~Application();

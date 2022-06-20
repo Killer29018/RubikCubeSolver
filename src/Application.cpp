@@ -29,6 +29,8 @@ uint32_t Application::s_ScreenVAO;
 
 bool Application::s_PreviousMousePicked = false;
 
+MoveManager Application::s_MoveManager;
+
 SettingsWindow Application::s_SettingsWindow;
 
 Application::~Application()
@@ -51,7 +53,7 @@ void Application::init(std::string title, glm::ivec2 windowSize)
     setupFramebuffer();
     setupScreenVAO();
 
-    s_SettingsWindow = SettingsWindow(s_CubeSize);
+    s_SettingsWindow = SettingsWindow(s_CubeSize, &s_MoveManager);
 
     ImguiWindowManager::init(s_Window);
     ImguiWindowManager::addWindow(&s_SettingsWindow);
@@ -71,7 +73,7 @@ void Application::init(std::string title, glm::ivec2 windowSize)
     s_ScreenShader.bind();
     s_ScreenShader.setUniformInt("u_ScreenTexture", 0);
 
-    CubeManager::generate(s_CubeSize);
+    CubeManager::generate(s_CubeSize, &s_MoveManager);
 
     MousePicker::init(&camera, CubeManager::getCubies(), s_CubeSize);
 }
@@ -158,7 +160,8 @@ void Application::changeSize(uint16_t newSize)
 {
     s_CubeSize = newSize;
     CubeManager::destroy();
-    CubeManager::generate(s_CubeSize);
+    s_MoveManager.reset();
+    CubeManager::generate(s_CubeSize, &s_MoveManager);
 
     MousePicker::init(&camera, CubeManager::getCubies(), s_CubeSize);
 }

@@ -24,8 +24,10 @@ private:
     static uint8_t s_Size;
 
     static bool s_MousePick;
+
+    static MoveManager* s_MoveManager;
 public:
-    static void generate(uint8_t size);
+    static void generate(uint8_t size, MoveManager* moveManager);
 
     static void destroy();
 

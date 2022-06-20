@@ -9,6 +9,7 @@
 #include "QB.hpp"
 
 #include "Util.hpp"
+#include "MoveManager.hpp"
 
 class Solver
 {
@@ -19,7 +20,7 @@ private:
 public:
     static void loadCube(QB** cubies, uint16_t size);
 
-    static void solve();
+    static void solve(MoveManager* moveManager);
 private:
     Solver() {}
     static void alignCenters();
