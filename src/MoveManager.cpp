@@ -74,11 +74,7 @@ void MoveManager::startSolve()
 void MoveManager::endSolve()
 {
     s_SolveStore = false;
-    std::cout << convertMovesToString(s_SolveMoves) << "\n";
-
     optimiseMoves(s_SolveMoves);
-
-    std::cout << convertMovesToString(s_SolveMoves) << "\n";
 }
 
 void MoveManager::startScramble()
@@ -91,8 +87,6 @@ void MoveManager::endScramble()
 {
     s_ScrambleStore = false;
     optimiseMoves(s_ScrambleMoves);
-
-    std::cout << convertMovesToString(s_ScrambleMoves) << "\n";
 }
 
 void MoveManager::optimiseMoves(std::vector<Move>& moves)
