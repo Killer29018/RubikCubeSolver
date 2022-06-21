@@ -8,7 +8,10 @@
 class MoveManager
 {
 private:
-    std::vector<Move> s_Moves;
+    std::vector<Move> m_Moves;
+    std::vector<Move> m_TotalMoves;
+
+    bool m_Optimised = false;
 public:
     MoveManager() = default;
     ~MoveManager() = default;
@@ -24,7 +27,7 @@ public:
     bool isEmpty();
     void reset();
 private:
-    void optimiseMoves();
+    void optimiseMoves(std::vector<Move>& moves);
     bool removeMoves(Move& move1, const Move& move2);
     bool removeMoves(Move& move1, const Move& move2, const Move& move3);
 };

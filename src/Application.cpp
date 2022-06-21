@@ -32,6 +32,7 @@ bool Application::s_PreviousMousePicked = false;
 CubeManager Application::s_CubeManager;
 Solver Application::s_Solver;
 MoveManager Application::s_MoveManager;
+MoveGenerator Application::s_MoveGenerator;
 
 SettingsWindow Application::s_SettingsWindow;
 
@@ -55,7 +56,6 @@ void Application::init(std::string title, glm::ivec2 windowSize)
     setupFramebuffer();
     setupScreenVAO();
 
-
     Face::initialize();
 
     camera.setAngle(45.0f, 45.0f);
@@ -76,9 +76,12 @@ void Application::init(std::string title, glm::ivec2 windowSize)
 
     s_Solver = Solver(&s_CubeManager, &s_MoveManager);
 
+    s_MoveGenerator = MoveGenerator(&s_CubeManager, &s_MoveManager);
+
     MousePicker::init(&camera, &s_CubeManager);
 
-    s_SettingsWindow = SettingsWindow(&s_CubeManager, &s_Solver, &s_MoveManager);
+    s_SettingsWindow = SettingsWindow(&s_CubeManager, &s_Solver, &s_MoveManager,
+            &s_MoveGenerator);
 
     ImguiWindowManager::init(s_Window);
     ImguiWindowManager::addWindow(&s_SettingsWindow);

@@ -12,6 +12,7 @@
 #include "Camera.hpp"
 #include "CubeManager.hpp"
 #include "Solver.hpp"
+#include "MoveGenerator.hpp"
 
 #include "imgui/WindowManager.hpp"
 #include "imgui/SettingsWindow.hpp"
@@ -50,6 +51,7 @@ private:
     static CubeManager s_CubeManager;
     static Solver s_Solver;
     static MoveManager s_MoveManager;
+    static MoveGenerator s_MoveGenerator;
 
     static SettingsWindow s_SettingsWindow;
 public:

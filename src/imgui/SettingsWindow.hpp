@@ -8,6 +8,7 @@
 #include "../MoveManager.hpp"
 #include "../CubeManager.hpp"
 #include "../Solver.hpp"
+#include "../MoveGenerator.hpp"
 
 class SettingsWindow : public ImguiWindow
 {
@@ -17,10 +18,11 @@ private:
     CubeManager* m_CubeManager;
     Solver* m_Solver;
     MoveManager* m_MoveManager;
+    MoveGenerator* m_MoveGenerator;
 public:
     SettingsWindow() = default;
     SettingsWindow(CubeManager* cubeManager, Solver* solver, 
-            MoveManager* moveManager);
+            MoveManager* moveManager, MoveGenerator* moveGenerator);
 
     ~SettingsWindow() = default;
 

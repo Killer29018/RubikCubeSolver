@@ -148,6 +148,9 @@ void CubeManager::update(float dt)
 
 void CubeManager::applyMoves(std::string input)
 {
+    if (input.size() == 0)
+        return;
+
     for (size_t i = 0; i <= input.size() - 1;)
     {
         char c = input[i];

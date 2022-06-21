@@ -5,8 +5,9 @@
 #include "../Application.hpp"
 
 SettingsWindow::SettingsWindow(CubeManager* cubeManager, 
-        Solver* solver, MoveManager* moveManager)
-    : m_CubeManager(cubeManager), m_Solver(solver), m_MoveManager(moveManager)
+        Solver* solver, MoveManager* moveManager, MoveGenerator* moveGenerator)
+    : m_CubeManager(cubeManager), m_Solver(solver), m_MoveManager(moveManager),
+    m_MoveGenerator(moveGenerator)
 {
     m_CubeSize = m_CubeManager->getSize();
 }
@@ -48,6 +49,16 @@ void SettingsWindow::renderImgui()
 
         float minF = 0.01f, maxF = 2.0f;
         ImGui::SliderScalar("##MOVE_SECONDS", ImGuiDataType_Float, &Move::seconds, &minF, &maxF);
+
+        if (ImGui::Button("Random Scramble", ImVec2(-1, 20)))
+        {
+            m_MoveGenerator->generateMoves();
+        }
+
+        if (ImGui::Button("Output Solve", ImVec2(-1, 20)))
+        {
+            std::cout << convertMovesToString(m_MoveManager->getAllMoves()) << "\n";
+        }
 
         ImGui::PopItemWidth();
         ImGui::End();
