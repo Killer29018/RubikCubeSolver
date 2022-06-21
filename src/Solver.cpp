@@ -4,21 +4,21 @@
 #include "Util.hpp"
 #include "MoveManager.hpp"
 
-QB** Solver::s_Cubies;
-uint16_t Solver::s_Size;
+Solver::Solver()
+    : m_CubeManager(nullptr), m_MoveManager(nullptr) { }
 
-void Solver::loadCube(QB** cubies, uint16_t size)
+Solver::Solver(CubeManager* cubeManager, MoveManager* moveManager)
+    : m_CubeManager(cubeManager), m_MoveManager(moveManager) { }
+
+void Solver::solve()
 {
-    s_Cubies = cubies;
+    if (!m_MoveManager || !m_CubeManager)
+        assert(false && "Not initialised");
 
-    s_Size = size;
-}
+    m_Size = m_CubeManager->getSize();
+    m_MoveManager->reset();
 
-void Solver::solve(MoveManager* moveManager)
-{
-    moveManager->reset();
-
-    if (s_Size > 2)
+    if (m_CubeManager->getSize() > 2)
     {
         alignCenters();
 
@@ -27,7 +27,7 @@ void Solver::solve(MoveManager* moveManager)
 
     solveCorners();
 
-    if (s_Size > 2)
+    if (m_CubeManager->getSize() > 2)
     {
         solveMiddleLayer();
 
@@ -60,24 +60,24 @@ void Solver::alignCenters()
 
                 if (leftFacing == FaceEnum::LEFT)
                 {
-                    CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::TWICE, 1 });
+                    m_CubeManager->doMove({ FaceEnum::RIGHT, RotationEnum::TWICE, 1 });
                 }
                 else
                 {
-                    CubeManager::doMove({ FaceEnum::FRONT, RotationEnum::TWICE, 1 });
+                    m_CubeManager->doMove({ FaceEnum::FRONT, RotationEnum::TWICE, 1 });
                 }
                 break;
             }
 
         case FaceEnum::RIGHT:
-            CubeManager::doMove({ FaceEnum::FRONT, RotationEnum::PRIME, 1 }); break;
+            m_CubeManager->doMove({ FaceEnum::FRONT, RotationEnum::PRIME, 1 }); break;
         case FaceEnum::LEFT:
-            CubeManager::doMove({ FaceEnum::FRONT, RotationEnum::NORMAL, 1 }); break;
+            m_CubeManager->doMove({ FaceEnum::FRONT, RotationEnum::NORMAL, 1 }); break;
 
         case FaceEnum::FRONT:
-            CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::NORMAL, 1 }); break;
+            m_CubeManager->doMove({ FaceEnum::RIGHT, RotationEnum::NORMAL, 1 }); break;
         case FaceEnum::BACK:
-            CubeManager::doMove({ FaceEnum::RIGHT, RotationEnum::PRIME, 1 }); break;
+            m_CubeManager->doMove({ FaceEnum::RIGHT, RotationEnum::PRIME, 1 }); break;
 
         default:
             assert(false && "Not possible");
@@ -94,12 +94,12 @@ void Solver::alignCenters()
         switch (facing)
         {
         case FaceEnum::BACK:
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE, 1 }); break;
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::TWICE, 1 }); break;
 
         case FaceEnum::RIGHT:
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME, 1 }); break;
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME, 1 }); break;
         case FaceEnum::LEFT:
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL, 1 }); break;
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL, 1 }); break;
 
         default:
             assert(false && "Not possible");
@@ -122,13 +122,13 @@ void Solver::solveCross()
         FaceEnum facing = current->getFacingSide(face);
         FaceEnum otherFacing = current->getFacingSide(otherFace);
 
-        if (pos.y == s_Size - 1) // Top Row
+        if (pos.y == m_Size - 1) // Top Row
         {
             if (facing == FaceEnum::UP) // Facing Correct Way
             {
                 if (otherFace != otherFacing) // Not correct position
                 {
-                    CubeManager::doMove({ otherFacing, RotationEnum::TWICE }); // Move to bottom face
+                    m_CubeManager->doMove({ otherFacing, RotationEnum::TWICE }); // Move to bottom face
                 }
                 else // Correct Position
                 {
@@ -143,34 +143,34 @@ void Solver::solveCross()
 
                 if (currentInt == targetInt) // Top face is looking at the right side
                 {
-                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
-                    CubeManager::doMove({ FaceEnum::UP, RotationEnum::PRIME });
+                    m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ FaceEnum::UP, RotationEnum::PRIME });
 
                     facing = current->getFacingSide(otherFace);
-                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
 
-                    CubeManager::doMove({ FaceEnum::UP, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ FaceEnum::UP, RotationEnum::NORMAL });
                     continue;
                 }
                 else if ((currentInt + targetInt) % 2 == 0) // Top face is looking at the opposite side
                 {
-                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
-                    CubeManager::doMove({ FaceEnum::UP, RotationEnum::NORMAL });
-                    CubeManager::doMove({ current->getFacingSide(otherFace), RotationEnum::NORMAL });
-                    CubeManager::doMove({ FaceEnum::UP, RotationEnum::PRIME });
+                    m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ FaceEnum::UP, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ current->getFacingSide(otherFace), RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ FaceEnum::UP, RotationEnum::PRIME });
                     continue;
                 }
                 else // Top face is looking at adjacent side
                 {
                     if (targetInt - currentInt == 1) // Right
                     {
-                        CubeManager::doMove({ facing, RotationEnum::NORMAL });
-                        CubeManager::doMove({ current->getFacingSide(otherFace), RotationEnum::NORMAL });
+                        m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
+                        m_CubeManager->doMove({ current->getFacingSide(otherFace), RotationEnum::NORMAL });
                     }
                     else if (targetInt - currentInt == -1) // Left
                     {
-                        CubeManager::doMove({ facing, RotationEnum::PRIME });
-                        CubeManager::doMove({ current->getFacingSide(otherFace), RotationEnum::PRIME });
+                        m_CubeManager->doMove({ facing, RotationEnum::PRIME });
+                        m_CubeManager->doMove({ current->getFacingSide(otherFace), RotationEnum::PRIME });
                     }
                     continue;
                 }
@@ -178,7 +178,7 @@ void Solver::solveCross()
         }
         else if (pos.y != 0) // Middle Row
         {
-            LocalEdgeEnum localEdge = CubeManager::getLocalEdge(pos, otherFacing);
+            LocalEdgeEnum localEdge = m_CubeManager->getLocalEdge(pos, otherFacing);
 
             if (otherFacing == otherFace)
             {
@@ -186,10 +186,10 @@ void Solver::solveCross()
                 switch(localEdge)
                 {
                 case LocalEdgeEnum::LEFT:
-                    CubeManager::doMove({ otherFacing, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ otherFacing, RotationEnum::NORMAL });
                     break;
                 case LocalEdgeEnum::RIGHT:
-                    CubeManager::doMove({ otherFacing, RotationEnum::PRIME });
+                    m_CubeManager->doMove({ otherFacing, RotationEnum::PRIME });
                     break;
                 default:
                     assert(false && "Unreachable, qb shouldn't be in top or bottom position");
@@ -202,14 +202,14 @@ void Solver::solveCross()
             switch (localEdge)
             {
                 case LocalEdgeEnum::LEFT:
-                    CubeManager::doMove({ otherFacing, RotationEnum::PRIME });
-                    CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
-                    CubeManager::doMove({ otherFacing, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ otherFacing, RotationEnum::PRIME });
+                    m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ otherFacing, RotationEnum::NORMAL });
                     break;
                 case LocalEdgeEnum::RIGHT:
-                    CubeManager::doMove({ otherFacing, RotationEnum::NORMAL });
-                    CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
-                    CubeManager::doMove({ otherFacing, RotationEnum::PRIME });
+                    m_CubeManager->doMove({ otherFacing, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ otherFacing, RotationEnum::PRIME });
                     break;
                 default:
                     assert(false && "Unreachable. qb shouldn't be in top or bottom position");
@@ -221,7 +221,7 @@ void Solver::solveCross()
         otherFacing = current->getFacingSide(otherFace);
         if (otherFace == otherFacing) // Correct side, Correctly facing due to recalculating facing direction
         {
-            CubeManager::doMove({ otherFacing, RotationEnum::TWICE });
+            m_CubeManager->doMove({ otherFacing, RotationEnum::TWICE });
             continue;
         }
         else // Wrong Side or wrong direction
@@ -233,8 +233,8 @@ void Solver::solveCross()
             {
                 RotationEnum rotation = getRotationToTarget(otherFacing, otherFace);
 
-                CubeManager::doMove({ FaceEnum::DOWN, rotation });
-                CubeManager::doMove({ otherFace, RotationEnum::TWICE });
+                m_CubeManager->doMove({ FaceEnum::DOWN, rotation });
+                m_CubeManager->doMove({ otherFace, RotationEnum::TWICE });
                 continue;
             }
 
@@ -242,7 +242,7 @@ void Solver::solveCross()
             currentInt = convertFaceToInt(facing);
             if ((currentInt + targetInt) % 2 == 0) // Opposite Sides or same
             {
-                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
 
                 currentInt = convertFaceToInt(facing); // Rotate Clockwise
                 facing = convertIntToFace(currentInt);
@@ -251,15 +251,15 @@ void Solver::solveCross()
             RotationEnum rotation = getRotationToTarget(currentInt, targetInt);
             if (rotation == RotationEnum::NORMAL) // Turn CW, Right of target
             {
-                CubeManager::doMove({ facing, RotationEnum::PRIME });
-                CubeManager::doMove({ otherFace, RotationEnum::NORMAL });
-                CubeManager::doMove({ facing, RotationEnum::NORMAL });
+                m_CubeManager->doMove({ facing, RotationEnum::PRIME });
+                m_CubeManager->doMove({ otherFace, RotationEnum::NORMAL });
+                m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
             }
             else if (rotation == RotationEnum::PRIME) // Turn CCW, Left of target
             {
-                CubeManager::doMove({ facing, RotationEnum::NORMAL });
-                CubeManager::doMove({ otherFace, RotationEnum::PRIME });
-                CubeManager::doMove({ facing, RotationEnum::PRIME });
+                m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
+                m_CubeManager->doMove({ otherFace, RotationEnum::PRIME });
+                m_CubeManager->doMove({ facing, RotationEnum::PRIME });
             }
         }
     }
@@ -285,7 +285,7 @@ void Solver::solveCorners()
         cornerFacing[0] = current->getFacingSide(corners[0]);
         cornerFacing[1] = current->getFacingSide(corners[1]);
 
-        if (pos.y == s_Size - 1) // Top Row
+        if (pos.y == m_Size - 1) // Top Row
         {
             if (facing == FaceEnum::UP) // Facing correct way
             {
@@ -295,19 +295,19 @@ void Solver::solveCorners()
                 }
                 else // Facing Up but in wrong position
                 {
-                    LocalCornerEnum localCorner = CubeManager::getLocalCorner(pos, cornerFacing[0]);
+                    LocalCornerEnum localCorner = m_CubeManager->getLocalCorner(pos, cornerFacing[0]);
 
                     switch (localCorner)
                     {
                     case LocalCornerEnum::TOP_LEFT:
-                        CubeManager::doMove({ cornerFacing[0], RotationEnum::PRIME });
-                        CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
-                        CubeManager::doMove({ cornerFacing[0], RotationEnum::NORMAL });
+                        m_CubeManager->doMove({ cornerFacing[0], RotationEnum::PRIME });
+                        m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+                        m_CubeManager->doMove({ cornerFacing[0], RotationEnum::NORMAL });
                         break;
                     case LocalCornerEnum::TOP_RIGHT:
-                        CubeManager::doMove({ cornerFacing[0], RotationEnum::NORMAL });
-                        CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
-                        CubeManager::doMove({ cornerFacing[0], RotationEnum::PRIME });
+                        m_CubeManager->doMove({ cornerFacing[0], RotationEnum::NORMAL });
+                        m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                        m_CubeManager->doMove({ cornerFacing[0], RotationEnum::PRIME });
                         break;
 
                     default:
@@ -320,19 +320,19 @@ void Solver::solveCorners()
             else
             {
                 // Top is facing sideways at top of cube
-                LocalCornerEnum localCorner = CubeManager::getLocalCorner(pos, facing);
+                LocalCornerEnum localCorner = m_CubeManager->getLocalCorner(pos, facing);
 
                 switch(localCorner)
                 {
                 case LocalCornerEnum::TOP_LEFT:
-                    CubeManager::doMove({ facing, RotationEnum::PRIME });
-                    CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
-                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ facing, RotationEnum::PRIME });
+                    m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+                    m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
                     break;
                 case LocalCornerEnum::TOP_RIGHT:
-                    CubeManager::doMove({ facing, RotationEnum::NORMAL });
-                    CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
-                    CubeManager::doMove({ facing, RotationEnum::PRIME });
+                    m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                    m_CubeManager->doMove({ facing, RotationEnum::PRIME });
                     break;
 
                 default:
@@ -354,23 +354,23 @@ void Solver::solveCorners()
 
             RotationEnum rotation = getRotationToTarget(chosenFacing, target);
 
-            CubeManager::doMove({ FaceEnum::DOWN, rotation });
+            m_CubeManager->doMove({ FaceEnum::DOWN, rotation });
 
-            LocalCornerEnum localCorner = CubeManager::getLocalCorner(current->index, target);
+            LocalCornerEnum localCorner = m_CubeManager->getLocalCorner(current->index, target);
 
             switch (localCorner)
             {
             case LocalCornerEnum::BOTTOM_LEFT:
-                CubeManager::doMove({ target, RotationEnum::PRIME });
-                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
-                CubeManager::doMove({ target, RotationEnum::NORMAL });
-                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+                m_CubeManager->doMove({ target, RotationEnum::PRIME });
+                m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
+                m_CubeManager->doMove({ target, RotationEnum::NORMAL });
+                m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
                 break;
             case LocalCornerEnum::BOTTOM_RIGHT:
-                CubeManager::doMove({ target, RotationEnum::NORMAL });
-                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
-                CubeManager::doMove({ target, RotationEnum::PRIME });
-                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+                m_CubeManager->doMove({ target, RotationEnum::NORMAL });
+                m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
+                m_CubeManager->doMove({ target, RotationEnum::PRIME });
+                m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
                 break;
 
             default:
@@ -392,26 +392,26 @@ void Solver::solveCorners()
         if (chosenFacing != chosen)
         {
             RotationEnum rotation = getRotationToTarget(chosenFacing, chosen);
-            CubeManager::doMove({ FaceEnum::DOWN, rotation });
+            m_CubeManager->doMove({ FaceEnum::DOWN, rotation });
             chosenFacing = current->getFacingSide(chosen);
         }
 
         facing = current->getFacingSide(face);
 
         // Corner has top facing out, and the other side aligned
-        LocalCornerEnum localCorner = CubeManager::getLocalCorner(current->index, chosenFacing);
+        LocalCornerEnum localCorner = m_CubeManager->getLocalCorner(current->index, chosenFacing);
 
         switch (localCorner)
         {
         case LocalCornerEnum::BOTTOM_RIGHT:
-            CubeManager::doMove({ facing, RotationEnum::PRIME });
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
-            CubeManager::doMove({ facing, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ facing, RotationEnum::PRIME });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
             break;
         case LocalCornerEnum::BOTTOM_LEFT:
-            CubeManager::doMove({ facing, RotationEnum::NORMAL });
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
-            CubeManager::doMove({ facing, RotationEnum::PRIME });
+            m_CubeManager->doMove({ facing, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ facing, RotationEnum::PRIME });
             break;
 
         default:
@@ -450,7 +450,7 @@ void Solver::solveMiddleLayer()
             // Either in the correct slot facing wrong, or in the wrong slot completely
 
             // Move out of slot
-            LocalEdgeEnum localEdge = CubeManager::getLocalEdge(pos, facing[0]);
+            LocalEdgeEnum localEdge = m_CubeManager->getLocalEdge(pos, facing[0]);
 
             insertEdge(facing[0], localEdge);
         }
@@ -468,7 +468,7 @@ void Solver::solveMiddleLayer()
         {
             RotationEnum rotation = getRotationToTarget(chosenFacing, chosenFace);
 
-            CubeManager::doMove({ FaceEnum::DOWN, rotation });
+            m_CubeManager->doMove({ FaceEnum::DOWN, rotation });
         }
 
         // Piece is above where it needs to be
@@ -497,7 +497,7 @@ void Solver::solveBottomCross()
 
     if (count == 0) // Dot
     {
-        CubeManager::applyMoves(moves);
+        m_CubeManager->applyMoves(moves);
     }
 
     std::array<QB*, 2> downEdges;
@@ -510,13 +510,13 @@ void Solver::solveBottomCross()
             downEdges[index++] = current;
         }
     }
-    LocalEdgeEnum localEdge1 = CubeManager::getLocalEdge(downEdges[0]->index, FaceEnum::DOWN);
-    LocalEdgeEnum localEdge2 = CubeManager::getLocalEdge(downEdges[1]->index, FaceEnum::DOWN);
+    LocalEdgeEnum localEdge1 = m_CubeManager->getLocalEdge(downEdges[0]->index, FaceEnum::DOWN);
+    LocalEdgeEnum localEdge2 = m_CubeManager->getLocalEdge(downEdges[1]->index, FaceEnum::DOWN);
 
     if ((static_cast<int>(localEdge1) + static_cast<int>(localEdge2)) % 2 == 0) // Line
     {
         if (localEdge1 == LocalEdgeEnum::TOP || localEdge1 == LocalEdgeEnum::BOTTOM)
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
 
         // Line is now in the correct direction
     }
@@ -529,23 +529,23 @@ void Solver::solveBottomCross()
         }
         else if (localEdge1 == LocalEdgeEnum::RIGHT || localEdge2 == LocalEdgeEnum::RIGHT)
         {
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
         }
         else if (localEdge1 == LocalEdgeEnum::BOTTOM || localEdge2 == LocalEdgeEnum::BOTTOM)
         {
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
         }
         else
         {
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
         }
 
-        CubeManager::applyMoves(moves);
+        m_CubeManager->applyMoves(moves);
         // L has become a line in the correct orientation
     }
 
     // Line in correct orientation
-    CubeManager::applyMoves(moves);
+    m_CubeManager->applyMoves(moves);
 }
 
 void Solver::alignBottomCross()
@@ -587,7 +587,7 @@ void Solver::alignBottomCross()
         return;
     }
 
-    CubeManager::doMove({ face, currentRotation });
+    m_CubeManager->doMove({ face, currentRotation });
 
     if (count == 4) // Pieces are now correct
         return;
@@ -624,17 +624,16 @@ void Solver::alignBottomCross()
     if (rotation == RotationEnum::TWICE)
     {
         // Faces are opposite eachother
-        CubeManager::applyMoves(moves);
-        CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
-        CubeManager::applyMoves(moves);
+        m_CubeManager->applyMoves(moves);
+        m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::TWICE });
+        m_CubeManager->applyMoves(moves);
 
         // Reorientate cross so it is correct
         FaceEnum chosenFace = getOtherFace(wrongPositions[0], face);
         FaceEnum chosenFacing = wrongPositions[0]->getFacingSide(chosenFace);
 
         rotation = getRotationToTarget(chosenFacing, chosenFace);
-        CubeManager::doMove({ FaceEnum::DOWN, rotation });
-
+        m_CubeManager->doMove({ FaceEnum::DOWN, rotation });
         return;
     }
 
@@ -650,12 +649,12 @@ void Solver::alignBottomCross()
 
     FaceEnum leftFacing = left->getFacingSide(getOtherFace(left, face));
 
-    LocalEdgeEnum leftEdge = CubeManager::getLocalEdge(left->index, face);
-    LocalEdgeEnum rightEdge = CubeManager::getLocalEdge(right->index, face);
+    LocalEdgeEnum leftEdge = m_CubeManager->getLocalEdge(left->index, face);
+    LocalEdgeEnum rightEdge = m_CubeManager->getLocalEdge(right->index, face);
 
     if (leftEdge == LocalEdgeEnum::BOTTOM && rightEdge == LocalEdgeEnum::RIGHT)
     { // Pieces are already correctly positioned
-        CubeManager::applyMoves(moves);
+        m_CubeManager->applyMoves(moves);
     }
     else
     {
@@ -663,9 +662,9 @@ void Solver::alignBottomCross()
         RotationEnum rotation = getRotationToTarget(leftFacing, FaceEnum::BACK);
         RotationEnum oppositeRotation = getRotationToTarget(FaceEnum::BACK, leftFacing);
 
-        CubeManager::doMove({ face, rotation });
-        CubeManager::applyMoves(moves);
-        CubeManager::doMove({ face, oppositeRotation });
+        m_CubeManager->doMove({ face, rotation });
+        m_CubeManager->applyMoves(moves);
+        m_CubeManager->doMove({ face, oppositeRotation });
     }
 }
 
@@ -701,7 +700,7 @@ void Solver::positionBottomCorners()
 
         if (wrongCorners.size() == 4) // All Corners are wrong
         {
-            CubeManager::applyMoves(moves);
+            m_CubeManager->applyMoves(moves);
             continue;
         }
 
@@ -716,21 +715,21 @@ void Solver::positionBottomCorners()
                 std::string moves = "F' R' D R D R' D' R F R' D' R D R F' R' F";
 
                 // Direction does not matter
-                CubeManager::applyMoves(moves);
+                m_CubeManager->applyMoves(moves);
             }
             else
             {
                 // Swap DFR and DBR
                 std::string moves = "R' D' R D R F' R2 D R D R' D' R F";
 
-                LocalCornerEnum corner1 = CubeManager::getLocalCorner(wrongCorners[0]->index, face);
-                LocalCornerEnum corner2 = CubeManager::getLocalCorner(wrongCorners[1]->index, face);
+                LocalCornerEnum corner1 = m_CubeManager->getLocalCorner(wrongCorners[0]->index, face);
+                LocalCornerEnum corner2 = m_CubeManager->getLocalCorner(wrongCorners[1]->index, face);
 
                 RotationEnum rotation = RotationEnum::NONE;
                 if (corner1 == LocalCornerEnum::BOTTOM_LEFT && corner2 == LocalCornerEnum::TOP_LEFT)
                 {
                     // Already aligned
-                    CubeManager::applyMoves(moves);
+                    m_CubeManager->applyMoves(moves);
                     continue;
                 }
                 else if (corner1 == LocalCornerEnum::BOTTOM_LEFT || corner2 == LocalCornerEnum::BOTTOM_LEFT)
@@ -740,25 +739,25 @@ void Solver::positionBottomCorners()
                 else
                     rotation = RotationEnum::TWICE;
 
-                CubeManager::doMove({ FaceEnum::DOWN, rotation });
-                CubeManager::applyMoves(moves);
+                m_CubeManager->doMove({ FaceEnum::DOWN, rotation });
+                m_CubeManager->applyMoves(moves);
             }
         }
 
         if (wrongCorners.size() == 3 && correctCorner) // Only One corner is correct
         {
-            LocalCornerEnum currentCorner = CubeManager::getLocalCorner(correctCorner->index, face);
+            LocalCornerEnum currentCorner = m_CubeManager->getLocalCorner(correctCorner->index, face);
             LocalCornerEnum targetCorner = LocalCornerEnum::BOTTOM_LEFT;
 
             RotationEnum rotation = getRotationToTarget(currentCorner, targetCorner);
             RotationEnum oppositeRotation = getRotationToTarget(targetCorner, currentCorner);
 
             // Put correct piece into position where it is not affected
-            CubeManager::doMove({ FaceEnum::DOWN, rotation });
-            CubeManager::applyMoves(moves);
+            m_CubeManager->doMove({ FaceEnum::DOWN, rotation });
+            m_CubeManager->applyMoves(moves);
 
             // Align bottom center again
-            CubeManager::doMove({ FaceEnum::DOWN, oppositeRotation }); // Undo bottom face rotation
+            m_CubeManager->doMove({ FaceEnum::DOWN, oppositeRotation }); // Undo bottom face rotation
         }
     }
     while (!finished);
@@ -785,20 +784,20 @@ void Solver::reorientateBottomCorners()
     {
         for (size_t i = 0; i < bottomCorners.size(); i++)
         {
-            QB* current = s_Cubies[CubeManager::getIndex(s_Size - 1, 0, s_Size - 1)];
+            QB* current = m_CubeManager->getQB(m_Size - 1, 0, m_Size - 1);
 
             while (current->getFacingSide(face) != face)
-                CubeManager::applyMoves(moves);
+                m_CubeManager->applyMoves(moves);
 
             if (i != bottomCorners.size() - 1) // Stop rotation when not needed
-                CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+                m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
         }
     }
 
     QB* chosen;
     FaceEnum chosenFace;
 
-    if (s_Size > 2)
+    if (m_Size > 2)
     {
         std::vector<QB*> bottomEdges = findQB(face, QBTypeEnum::EDGE);
 
@@ -825,7 +824,7 @@ void Solver::reorientateBottomCorners()
     {
         RotationEnum rotation = getRotationToTarget(facing, chosenFace);
 
-        CubeManager::doMove({ face, rotation });
+        m_CubeManager->doMove({ face, rotation });
     }
 }
 
@@ -838,14 +837,14 @@ void Solver::insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge)
         {
             FaceEnum leftFace = convertIntToFace(positiveMod(currentFaceInt - 1, 4));
 
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
-            CubeManager::doMove({ leftFace, RotationEnum::NORMAL });
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
-            CubeManager::doMove({ leftFace, RotationEnum::PRIME});
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
-            CubeManager::doMove({ currentFace, RotationEnum::PRIME });
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
-            CubeManager::doMove({ currentFace, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ leftFace, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            m_CubeManager->doMove({ leftFace, RotationEnum::PRIME});
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            m_CubeManager->doMove({ currentFace, RotationEnum::PRIME });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ currentFace, RotationEnum::NORMAL });
 
             break;
         }
@@ -853,14 +852,14 @@ void Solver::insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge)
         {
             FaceEnum rightFace = convertIntToFace(positiveMod(currentFaceInt + 1, 4));
 
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
-            CubeManager::doMove({ rightFace, RotationEnum::PRIME });
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
-            CubeManager::doMove({ rightFace, RotationEnum::NORMAL});
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
-            CubeManager::doMove({ currentFace, RotationEnum::NORMAL });
-            CubeManager::doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
-            CubeManager::doMove({ currentFace, RotationEnum::PRIME });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            m_CubeManager->doMove({ rightFace, RotationEnum::PRIME });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ rightFace, RotationEnum::NORMAL});
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ currentFace, RotationEnum::NORMAL });
+            m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::PRIME });
+            m_CubeManager->doMove({ currentFace, RotationEnum::PRIME });
             break;
         }
 
@@ -872,16 +871,16 @@ void Solver::insertEdge(FaceEnum currentFace, LocalEdgeEnum targetEdge)
 std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
 {
     std::vector<QB*> edges;
-    for (int z = 0; z < s_Size; z++)
+    for (int z = 0; z < m_Size; z++)
     {
-        for (int y = 0; y < s_Size; y++)
+        for (int y = 0; y < m_Size; y++)
         {
-            for (int x = 0; x < s_Size; x++)
+            for (int x = 0; x < m_Size; x++)
             {
-                size_t count = s_Cubies[CubeManager::getIndex(x, y, z)]->getFaceCount();
-                if (count == static_cast<int>(faceType) && s_Cubies[CubeManager::getIndex(x, y, z)]->hasFace(face))
+                size_t count = m_CubeManager->getQB(x, y, z)->getFaceCount();
+                if (count == static_cast<int>(faceType) && m_CubeManager->getQB(x, y, z)->hasFace(face))
                 {
-                    edges.push_back(s_Cubies[CubeManager::getIndex(x, y, z)]);
+                    edges.push_back(m_CubeManager->getQB(x, y, z));
                 }
             }
         }
@@ -893,16 +892,16 @@ std::vector<QB*> Solver::findQB(FaceEnum face, QBTypeEnum faceType)
 std::vector<QB*> Solver::findNotQB(FaceEnum face, QBTypeEnum faceType)
 {
     std::vector<QB*> edges;
-    for (int z = 0; z < s_Size; z++)
+    for (int z = 0; z < m_Size; z++)
     {
-        for (int y = 0; y < s_Size; y++)
+        for (int y = 0; y < m_Size; y++)
         {
-            for (int x = 0; x < s_Size; x++)
+            for (int x = 0; x < m_Size; x++)
             {
-                size_t count = s_Cubies[CubeManager::getIndex(x, y, z)]->getFaceCount();
-                if (count == static_cast<int>(faceType) && !s_Cubies[CubeManager::getIndex(x, y, z)]->hasFace(face))
+                size_t count = m_CubeManager->getQB(x, y, z)->getFaceCount();
+                if (count == static_cast<int>(faceType) && !m_CubeManager->getQB(x, y, z)->hasFace(face))
                 {
-                    edges.push_back(s_Cubies[CubeManager::getIndex(x, y, z)]);
+                    edges.push_back(m_CubeManager->getQB(x, y, z));
                 }
             }
         }
@@ -914,15 +913,16 @@ std::vector<QB*> Solver::findNotQB(FaceEnum face, QBTypeEnum faceType)
 int Solver::getCountFacing(FaceEnum face, QBTypeEnum faceType)
 {
     int count = 0;
-    for (int z = 0; z < s_Size; z++)
+    for (int z = 0; z < m_Size; z++)
     {
-        for (int y = 0; y < s_Size; y++)
+        for (int y = 0; y < m_Size; y++)
         {
-            for (int x = 0; x < s_Size; x++)
+            for (int x = 0; x < m_Size; x++)
             {
-                if (s_Cubies[CubeManager::getIndex(x, y, z)]->hasFace(face) && s_Cubies[CubeManager::getIndex(x, y, z)]->getFaceCount() == static_cast<int>(faceType))
+                if (m_CubeManager->getQB(x, y, z)->hasFace(face) && 
+                        m_CubeManager->getQB(x, y, z)->getFaceCount() == static_cast<int>(faceType))
                 {
-                    if (s_Cubies[CubeManager::getIndex(x, y, z)]->getFacingSide(face) == face)
+                    if (m_CubeManager->getQB(x, y, z)->getFacingSide(face) == face)
                     {
                         count++;
                     }
@@ -956,7 +956,7 @@ bool Solver::cornerInCorrectPosition(QB* corner)
 
     if ((corner->activeFaces & FaceEnum::UP) == FaceEnum::UP)
     {
-        correctPosition.y = s_Size - 1;
+        correctPosition.y = m_Size - 1;
     }
     else if ((corner->activeFaces & FaceEnum::DOWN) == FaceEnum::DOWN)
     {
@@ -969,12 +969,12 @@ bool Solver::cornerInCorrectPosition(QB* corner)
     }
     else if ((corner->activeFaces & FaceEnum::RIGHT) == FaceEnum::RIGHT)
     {
-        correctPosition.x = s_Size - 1;
+        correctPosition.x = m_Size - 1;
     }
 
     if ((corner->activeFaces & FaceEnum::FRONT) == FaceEnum::FRONT)
     {
-        correctPosition.z = s_Size - 1;
+        correctPosition.z = m_Size - 1;
     }
     else if ((corner->activeFaces & FaceEnum::BACK) == FaceEnum::BACK)
     {
@@ -986,8 +986,8 @@ bool Solver::cornerInCorrectPosition(QB* corner)
 
 bool Solver::cornerInDiagonalPosition(FaceEnum face, QB* corner1, QB* corner2)
 {
-    LocalCornerEnum corner1Enum = CubeManager::getLocalCorner(corner1->index, face);
-    LocalCornerEnum corner2Enum = CubeManager::getLocalCorner(corner2->index, face);
+    LocalCornerEnum corner1Enum = m_CubeManager->getLocalCorner(corner1->index, face);
+    LocalCornerEnum corner2Enum = m_CubeManager->getLocalCorner(corner2->index, face);
 
     int intCorner1 = static_cast<int>(corner1Enum);
     int intCorner2 = static_cast<int>(corner2Enum);
@@ -1005,8 +1005,8 @@ bool Solver::cornerInDiagonalPosition(FaceEnum face, QB* corner1, QB* corner2)
 
 bool Solver::cornerInAdjacentPosition(FaceEnum face, QB* corner1, QB* corner2)
 {
-    LocalCornerEnum corner1Enum = CubeManager::getLocalCorner(corner1->index, face);
-    LocalCornerEnum corner2Enum = CubeManager::getLocalCorner(corner2->index, face);
+    LocalCornerEnum corner1Enum = m_CubeManager->getLocalCorner(corner1->index, face);
+    LocalCornerEnum corner2Enum = m_CubeManager->getLocalCorner(corner2->index, face);
 
     int intCorner1 = static_cast<int>(corner1Enum);
     int intCorner2 = static_cast<int>(corner2Enum);

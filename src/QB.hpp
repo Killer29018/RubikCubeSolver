@@ -33,8 +33,8 @@ public:
 
     void draw(KRE::Shader& shader, glm::quat customRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
 
-    size_t getFaceCount() { return m_FaceCount; }
-    bool hasFace(FaceEnum face) { return (activeFaces & face) == face; }
+    size_t getFaceCount() const { return m_FaceCount; }
+    bool hasFace(FaceEnum face) const { return (activeFaces & face) == face; }
 
     FaceEnum getFacingSide(FaceEnum face);
     glm::ivec3 getFaceNormal(FaceEnum face);

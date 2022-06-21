@@ -29,13 +29,15 @@ uint32_t Application::s_ScreenVAO;
 
 bool Application::s_PreviousMousePicked = false;
 
+CubeManager Application::s_CubeManager;
+Solver Application::s_Solver;
 MoveManager Application::s_MoveManager;
 
 SettingsWindow Application::s_SettingsWindow;
 
 Application::~Application()
 {
-    CubeManager::destroy();
+    s_CubeManager.destroy();
     glfwTerminate();
 }
 
@@ -53,10 +55,6 @@ void Application::init(std::string title, glm::ivec2 windowSize)
     setupFramebuffer();
     setupScreenVAO();
 
-    s_SettingsWindow = SettingsWindow(s_CubeSize, &s_MoveManager);
-
-    ImguiWindowManager::init(s_Window);
-    ImguiWindowManager::addWindow(&s_SettingsWindow);
 
     Face::initialize();
 
@@ -73,9 +71,17 @@ void Application::init(std::string title, glm::ivec2 windowSize)
     s_ScreenShader.bind();
     s_ScreenShader.setUniformInt("u_ScreenTexture", 0);
 
-    CubeManager::generate(s_CubeSize, &s_MoveManager);
+    s_CubeManager = CubeManager(&s_MoveManager);
+    s_CubeManager.generate(s_CubeSize);
 
-    MousePicker::init(&camera, CubeManager::getCubies(), s_CubeSize);
+    s_Solver = Solver(&s_CubeManager, &s_MoveManager);
+
+    MousePicker::init(&camera, &s_CubeManager);
+
+    s_SettingsWindow = SettingsWindow(&s_CubeManager, &s_Solver, &s_MoveManager);
+
+    ImguiWindowManager::init(s_Window);
+    ImguiWindowManager::addWindow(&s_SettingsWindow);
 }
 
 void Application::run()
@@ -86,7 +92,7 @@ void Application::run()
 
         glfwPollEvents();
 
-        CubeManager::update(KRE::Clock::deltaTime);
+        s_CubeManager.update(KRE::Clock::deltaTime);
 
 
         glBindFramebuffer(GL_FRAMEBUFFER, s_FBO);
@@ -110,7 +116,7 @@ void Application::run()
         s_CubeShader.setUniformMatrix4("u_View", camera.getViewMatrix());
         s_CubeShader.setUniformVector3("u_ViewPos", camera.getPosition());
 
-        CubeManager::draw(s_CubeShader);
+        s_CubeManager.draw(s_CubeShader);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -159,11 +165,11 @@ void Application::run()
 void Application::changeSize(uint16_t newSize)
 {
     s_CubeSize = newSize;
-    CubeManager::destroy();
+    s_CubeManager.destroy();
     s_MoveManager.reset();
-    CubeManager::generate(s_CubeSize, &s_MoveManager);
+    s_CubeManager.generate(s_CubeSize);
 
-    MousePicker::init(&camera, CubeManager::getCubies(), s_CubeSize);
+    MousePicker::init(&camera, &s_CubeManager);
 }
 
 

@@ -6,16 +6,21 @@
 #include <cstdint>
 
 #include "../MoveManager.hpp"
+#include "../CubeManager.hpp"
+#include "../Solver.hpp"
 
 class SettingsWindow : public ImguiWindow
 {
 private:
     uint16_t m_CubeSize;
 
-    MoveManager* moveManager;
+    CubeManager* m_CubeManager;
+    Solver* m_Solver;
+    MoveManager* m_MoveManager;
 public:
     SettingsWindow() = default;
-    SettingsWindow(uint16_t cubeSize, MoveManager* moveManager);
+    SettingsWindow(CubeManager* cubeManager, Solver* solver, 
+            MoveManager* moveManager);
 
     ~SettingsWindow() = default;
 

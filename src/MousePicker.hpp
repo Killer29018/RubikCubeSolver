@@ -4,6 +4,7 @@
 #include "Enums.hpp"
 #include "QB.hpp"
 #include "Camera.hpp"
+#include "Util.hpp"
 
 #include <glad/gl.h>
 #include <glm/glm.hpp>
@@ -23,6 +24,8 @@ struct MousePickerStruct
     bool movingX = false;
 };
 
+struct CubeManager;
+
 class MousePicker
 {
 public:
@@ -34,9 +37,11 @@ private:
     static QB** s_Cubies;
     static uint16_t s_Size;
 
+    static CubeManager* s_CubeManager;
+
     static bool s_MousePickEnabled;
 public:
-    static void init(Camera* camera, QB** cubies, uint16_t size);
+    static void init(Camera* camera, CubeManager* cubeManager);
 
     static void startPicking(uint32_t fbo, glm::vec2 mousePosition);
     static void mouseMoved(glm::vec2 mouseOffset);

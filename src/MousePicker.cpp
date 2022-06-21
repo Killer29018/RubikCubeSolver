@@ -14,13 +14,15 @@ Camera* MousePicker::s_Camera;
 QB** MousePicker::s_Cubies;
 uint16_t MousePicker::s_Size = 0;
 
+CubeManager* MousePicker::s_CubeManager;
+
 bool MousePicker::s_MousePickEnabled = false;
 
-void MousePicker::init(Camera* camera, QB** cubies, uint16_t size)
+void MousePicker::init(Camera* camera, CubeManager* cubeManager)
 {
     s_Camera = camera;
-    s_Cubies = cubies;
-    s_Size = size;
+    s_CubeManager = cubeManager;
+    s_Size = s_CubeManager->getSize();
 }
 
 void MousePicker::startPicking(uint32_t fbo, glm::vec2 mousePosition)
@@ -32,7 +34,8 @@ void MousePicker::startPicking(uint32_t fbo, glm::vec2 mousePosition)
     glReadBuffer(GL_COLOR_ATTACHMENT1);
 
     glm::vec4 pixelData(0.0f);
-    glReadPixels((int)mousePosition.x, (int)mousePosition.y, 1, 1, GL_RGBA, GL_FLOAT, glm::value_ptr(pixelData));
+    glReadPixels((int)mousePosition.x, (int)mousePosition.y, 1, 1, GL_RGBA, 
+            GL_FLOAT, glm::value_ptr(pixelData));
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -49,7 +52,8 @@ void MousePicker::startPicking(uint32_t fbo, glm::vec2 mousePosition)
     index.z = pixelData.w;
 
     pickedObject.index = index;
-    pickedObject.qb = s_Cubies[CubeManager::getIndex(index)];
+    pickedObject.qb = s_CubeManager->getQB(index);
+    
 
     pickedObject.mouseOffset = glm::vec2(0.0f);
 }
@@ -162,7 +166,7 @@ void MousePicker::endPicking()
 
     Move move = Move(slice, rotation, sliceIndex);
     move.time = 1.0f;
-    CubeManager::doMove(move);
+    s_CubeManager->doMove(move);
 
     s_MousePickEnabled = false;
     pickedObject.moving = false;

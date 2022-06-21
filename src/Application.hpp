@@ -47,6 +47,8 @@ private:
 
     static bool s_PreviousMousePicked;
 
+    static CubeManager s_CubeManager;
+    static Solver s_Solver;
     static MoveManager s_MoveManager;
 
     static SettingsWindow s_SettingsWindow;

@@ -4,9 +4,11 @@
 
 #include "../Application.hpp"
 
-SettingsWindow::SettingsWindow(uint16_t cubeSize, MoveManager* moveManager)
-    : m_CubeSize(cubeSize), moveManager(moveManager)
+SettingsWindow::SettingsWindow(CubeManager* cubeManager, 
+        Solver* solver, MoveManager* moveManager)
+    : m_CubeManager(cubeManager), m_Solver(solver), m_MoveManager(moveManager)
 {
+    m_CubeSize = m_CubeManager->getSize();
 }
 
 void SettingsWindow::renderImgui()
@@ -30,7 +32,7 @@ void SettingsWindow::renderImgui()
 
         if (ImGui::Button("Solve", ImVec2(-1, 20)))
         {
-            Solver::solve(moveManager);
+            m_Solver->solve();
         }
 
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
@@ -38,7 +40,7 @@ void SettingsWindow::renderImgui()
         if (ImGui::Button("Scramble", ImVec2(-1, 20)))
         {
             std::string input = std::string(scrambleSeq);
-            CubeManager::applyMoves(input);
+            m_CubeManager->applyMoves(input);
         }
 
         ImGui::Text("Scramble Sequence");
