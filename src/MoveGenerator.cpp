@@ -8,27 +8,26 @@ MoveGenerator::MoveGenerator(CubeManager* cubeManager, MoveManager* moveManager)
 
 void MoveGenerator::generateMoves()
 {
-    const std::string moves[] = { "F", "R", "B", "L", "U", "D" };
-    const size_t moveCount = 6;
-    const std::string prefix[] = { "", "\'", "" };
-    const size_t prefixCount = 3;
+    const size_t faceCount = 6;
+    const size_t rotationCount = 3;
 
     m_MoveManager->reset();
 
-    std::string finalMoves = "";
-
-    constexpr size_t totalMoves = 20;
+    const size_t totalMoves = 25;
 
     for (size_t i = 0; i < totalMoves; i++)
     {
-        int moveIndex = rand() % moveCount;
-        int prefixIndex = rand() % prefixCount;
+        int faceIndex = rand() % faceCount;
+        FaceEnum face = static_cast<FaceEnum>(1 << faceIndex);
 
-        finalMoves += moves[moveIndex] + prefix[prefixIndex];
+        int rotationIndex = rand() % rotationCount;
+        if (rotationIndex == 0)
+            rotationIndex--;
 
-        if (i < totalMoves - 1)
-            finalMoves += " ";
+        RotationEnum rotation = static_cast<RotationEnum>(rotationIndex);
+
+        Move m = Move(face, rotation);
+
+        m_CubeManager->doMove(m);
     }
-
-    std::cout << finalMoves << "\n";
 }

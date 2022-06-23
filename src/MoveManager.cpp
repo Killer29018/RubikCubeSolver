@@ -55,8 +55,9 @@ bool MoveManager::isEmpty()
 
 void MoveManager::reset()
 {
-    m_Moves.clear();
     m_TotalMoves.clear();
+
+    m_Optimised = true;
 }
 
 void MoveManager::optimiseMoves(std::vector<Move>& moves)

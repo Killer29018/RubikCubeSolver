@@ -29,7 +29,7 @@ void ImguiWindowManager::preRender()
 
 void ImguiWindowManager::render()
 {
-    static bool showDemo = false;
+    static bool showDemo = true;
     ImGui::ShowDemoWindow(&showDemo);
 
     std::for_each(m_ImguiWindows.cbegin(), m_ImguiWindows.cend(), [](ImguiWindow* window){

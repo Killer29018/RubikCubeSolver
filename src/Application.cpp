@@ -360,7 +360,10 @@ void Application::keyCallback(GLFWwindow* window, int key, int scancode, int act
 }
 
 void Application::scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
-{
+{ 
+    if (ImGui::GetIO().WantCaptureMouse)
+        return;
+
     Application::camera.processScrollWheel(-yOffset);
 }
 

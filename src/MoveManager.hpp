@@ -18,6 +18,7 @@ public:
 
     void addMove(const Move& move);
 
+    bool movesUpdated() { return !m_Optimised; }
     const std::vector<Move>& getAllMoves();
 
     Move* getMove();

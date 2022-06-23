@@ -244,7 +244,8 @@ void Solver::solveCross()
             {
                 m_CubeManager->doMove({ FaceEnum::DOWN, RotationEnum::NORMAL });
 
-                currentInt = convertFaceToInt(facing); // Rotate Clockwise
+                currentInt = (currentInt + 1) % 4;
+                // currentInt = convertFaceToInt(facing); // Rotate Clockwise
                 facing = convertIntToFace(currentInt);
             }
 
